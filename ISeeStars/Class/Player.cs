@@ -23,7 +23,7 @@ namespace ISS
             _anims.AddAnimation(new Vector2(0, 0), new Animation(texture, 4, 2, 0, 2, 0.25f, 1)); //Stand
             _anims.AddAnimation(new Vector2(1, 0), new Animation(texture, 4, 2, 0, 3, 0.1f, 2));  //Right
             _anims.AddAnimation(new Vector2(-1, 0), new Animation(texture, 4, 2, 0, 3, 0.1f, 2)); //Left
-            //_anims.AddAnimation(new Vector2(0, -1), new Animation(texture, 4, 2, 0, 3, 0.25f, 2)); //Jump            
+            _anims.AddAnimation(new Vector2(0, -1), new Animation(texture, 4, 2, 0, 0, 0.25f, 2)); //Jump            
             _anims.AddAnimation(new Vector2(0, 1), new Animation(texture, 4, 2, 3, 3, 0.25f, 1)); //Crouch
         }
 
@@ -55,6 +55,7 @@ namespace ISS
             {
                 position += Vector2.Normalize(new Vector2(0,-1)) * jumpPower * Globals.ElapsedSeconds;
                 jumpPower -= Globals.Gravity;
+                _anims.Update(new Vector2(0, -1));
             }
 
             if (InputManager.Crouch)
