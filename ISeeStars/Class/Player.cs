@@ -7,17 +7,18 @@ namespace ISS
     internal class Player
     {
         private Texture2D texture;
-        private Vector2 position;
+        public Vector2 Position;
         private float speed;
         private float jumpPower;
         //private bool attacking;
         //private bool running;
+        public Vector2 Origin { get; }
 
         private readonly AnimationManager _anims = new AnimationManager();
 
         public Player(Vector2 position)
         {
-            this.position = position;
+            Position = position;
             speed = 0f;
             texture = Globals.Content.Load<Texture2D>("sprite_player01x4");
             _anims.AddAnimation(new Vector2(0, 0), new Animation(texture, 4, 2, 0, 2, 0.25f, 1)); //Stand
@@ -25,6 +26,8 @@ namespace ISS
             _anims.AddAnimation(new Vector2(-1, 0), new Animation(texture, 4, 2, 0, 3, 0.1f, 2)); //Left
             _anims.AddAnimation(new Vector2(0, -1), new Animation(texture, 4, 2, 0, 0, 0.25f, 2)); //Jump            
             _anims.AddAnimation(new Vector2(0, 1), new Animation(texture, 4, 2, 3, 3, 0.25f, 1)); //Crouch
+
+            Origin = new Vector2((texture.Width / 4)/2, (texture.Height / 2)/2);
         }
 
         //public bool Attacking { get => attacking; set => attacking = value; }
@@ -32,13 +35,18 @@ namespace ISS
         {
             if (InputManager.Moving)
             {
-                position += Vector2.Normalize(InputManager.Direction) * speed * Globals.ElapsedSeconds;
+                Position += Vector2.Normalize(InputManager.Direction) * speed * Globals.ElapsedSeconds;
             }
             _anims.Update(InputManager.Direction);
 
-            if (position.Y <= Globals.ScreenY-150)
+            if (Position.Y + (texture.Height/4) > Globals.GroundLevel)
             {
-                position.Y += Globals.Gravity;
+                Position = new Vector2(Position.X, Globals.GroundLevel- (texture.Height / 4));
+            }
+
+            if (Position.Y + (texture.Height / 4) < Globals.GroundLevel)
+            {
+                Position.Y += Globals.Gravity;                
             }
             else
             {
@@ -53,7 +61,7 @@ namespace ISS
             }
             if (jumpPower>0)
             {
-                position += Vector2.Normalize(new Vector2(0,-1)) * jumpPower * Globals.ElapsedSeconds;
+                Position += Vector2.Normalize(new Vector2(0,-1)) * jumpPower * Globals.ElapsedSeconds;
                 jumpPower -= Globals.Gravity;
                 _anims.Update(new Vector2(0, -1));
             }
@@ -64,9 +72,9 @@ namespace ISS
             }
         }
          
-            public void Draw()
+        public void Draw()
         {
-            _anims.Draw(position);
+            _anims.Draw(Position);
         }
 
     }

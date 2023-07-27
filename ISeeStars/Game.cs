@@ -2,12 +2,17 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
+using MonoGame.Extended.Collisions;
+using MonoGame.Extended;
 
 public class Game : Microsoft.Xna.Framework.Game
 {
     private readonly GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
     private GameManager _gm;
+
+    const int MapWidth = 500;
+    const int MapHeight = 768;
 
     public Game()
     {
@@ -20,6 +25,7 @@ public class Game : Microsoft.Xna.Framework.Game
     {
         Globals.ScreenX = 1024;
         Globals.ScreenY = 768;
+        Globals.GroundLevel = 700;
 
         _graphics.PreferredBackBufferWidth = Globals.ScreenX;
         _graphics.PreferredBackBufferHeight = Globals.ScreenY;

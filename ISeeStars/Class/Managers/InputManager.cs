@@ -5,7 +5,7 @@ namespace ISS
 {
     public class InputManager
     {
-        private readonly float _BackgroundSpeed = 100f;
+        private static float _BackgroundSpeed = 100f;
         private static Vector2 _direction;
         private static char _side;
 
@@ -14,6 +14,7 @@ namespace ISS
         public float BackgroundMovement { get; set; }
         public static bool Jump { get; set; }
         public static bool Crouch { get; set; }
+        public static bool Running { get; set; }
         public static char Side => _side;
 
         public static int JumpDelay { get; set; }
@@ -36,14 +37,19 @@ namespace ISS
                 BackgroundMovement = +_BackgroundSpeed;
                 _side = 'L';
             }
-            
+
+            Crouch = false;
             if (ks.IsKeyDown(Keys.S))
             {
                 Crouch = true;
             }
-            else
+
+            Running = false;
+            _BackgroundSpeed = 100f;
+            if (ks.IsKeyDown(Keys.H) && !Crouch)
             {
-                Crouch = false;
+                Running = true;
+                _BackgroundSpeed = 200f;
             }
 
             if (ks.IsKeyDown(Keys.Space) && JumpDelay <= 0 && !Crouch)

@@ -12,6 +12,7 @@ namespace ISS
         public static float Gravity { get; set; }
         public static int ScreenX { get; set; }
         public static int ScreenY { get; set; }
+        public static int GroundLevel { get; set; }
 
         public static void Update(GameTime gameTime)
         {
