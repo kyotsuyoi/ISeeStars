@@ -81,11 +81,9 @@ namespace ISS
                 spriteEffects = SpriteEffects.FlipHorizontally;
             }
 
-            pos = new Vector2 (pos.X - _sourceRectangles[_frame].Width/2, pos.Y - _sourceRectangles[_frame].Height / 2);
+            //pos = new Vector2 (pos.X - _sourceRectangles[_frame].Width/2, pos.Y - _sourceRectangles[_frame].Height / 2);
+            pos = new Vector2 (pos.X+5, pos.Y);
             Globals.SpriteBatch.Draw(_texture, pos, _sourceRectangles[_frame], Color.White, 0, Vector2.Zero, Vector2.One, spriteEffects, 1);
-
-            SpriteFont font = Globals.Content.Load<SpriteFont>("fontMedium");
-            Globals.SpriteBatch.DrawString(font, "Depth:" + (int) pos.Y, new Vector2(10,10), Color.Black);
         }
     }
 

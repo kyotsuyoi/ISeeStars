@@ -12,6 +12,7 @@ namespace ISS
         private Player player;
         //private TileObject tileObject;
 
+        private int _interactObjectsId = -1;
         private readonly List<TileObject> _objects = new List <TileObject>();
 
         public GameManager(Vector2 playerPosition)
@@ -27,7 +28,7 @@ namespace ISS
             TileObject tileObject2 = new TileObject(new Vector2(85, 0));
 
             _objects.Add(tileObject);
-            _objects.Add(tileObject2);
+            //_objects.Add(tileObject2);
         }
 
         public void Update()
@@ -41,7 +42,7 @@ namespace ISS
             }
             player.Update();
 
-            CheckCollisions();
+            //CheckCollisions();
             CheckCollisions(player);
         }
 
@@ -54,6 +55,14 @@ namespace ISS
                 object1.Draw();
             }
             player.Draw();
+
+            SpriteFont font = Globals.Content.Load<SpriteFont>("fontMedium"); //480  612
+            Globals.SpriteBatch.DrawString(font, "Depth:" + (int)player.Position.Y, new Vector2(10, 10), Color.Black);
+            if (player.interact)
+            {
+                Globals.SpriteBatch.DrawString(font, "Y", new Vector2(_objects[_interactObjectsId].Position.X + _objects[_interactObjectsId].Origin.X-5, _objects[_interactObjectsId].Position.Y-10), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+                Globals.SpriteBatch.DrawString(font, "Y", new Vector2(_objects[_interactObjectsId].Position.X + _objects[_interactObjectsId].Origin.X-7, _objects[_interactObjectsId].Position.Y-12), Color.Yellow, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            }
         }
 
         private void CheckCollisions()
@@ -77,9 +86,30 @@ namespace ISS
             {
                 if ((_objects[i].Position - player.Position).Length() < (_objects[i].Origin.X + player.Origin.X))
                 {
-                    //ResolveCollision(_circles[i], _circles[j]);
+                    player.interact = true;
+                    _interactObjectsId = i;
+
+                    if(player.Position.Y + 80 > _objects[i].Position.Y)
+                    {
+                        player.Position.Y = _objects[i].Position.Y - 80;
+                    }
+
                     break;
-                }                
+                }
+                player.interact = false;
+                _interactObjectsId = -1;
+            }
+        }
+
+        private void CheckCollisions2(Player player)
+        {
+            for (int i = 0; i < _objects.Count; i++)
+            {
+                if ((_objects[i].Position - player.Position).Length() < (_objects[i].Origin.X + player.Origin.X))
+                {
+                    
+                    break;
+                }
             }
         }
     }

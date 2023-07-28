@@ -12,13 +12,16 @@ namespace ISS
         private float jumpPower;
         //private bool attacking;
         //private bool running;
+        public bool interact = false;
         public Vector2 Origin { get; }
+        public int GroundLevel = Globals.GroundLevel;
+        public Rectangle Rectangle { get; set; }
+        public Vector2 Velocity;
 
         private readonly AnimationManager _anims = new AnimationManager();
 
         public Player(Vector2 position)
         {
-            Position = position;
             speed = 0f;
             texture = Globals.Content.Load<Texture2D>("sprite_player01x4");
             _anims.AddAnimation(new Vector2(0, 0), new Animation(texture, 4, 2, 0, 2, 0.25f, 1)); //Stand
@@ -28,6 +31,9 @@ namespace ISS
             _anims.AddAnimation(new Vector2(0, 1), new Animation(texture, 4, 2, 3, 3, 0.25f, 1)); //Crouch
 
             Origin = new Vector2((texture.Width / 4)/2, (texture.Height / 2)/2);
+            Position = new Vector2(position.X - Origin.X, position.Y);
+
+            Rectangle = new Rectangle((int)Position.X, (int)Position.Y, texture.Width / 4, texture.Height / 2);
         }
 
         //public bool Attacking { get => attacking; set => attacking = value; }
@@ -39,12 +45,12 @@ namespace ISS
             }
             _anims.Update(InputManager.Direction);
 
-            if (Position.Y + (texture.Height/4) > Globals.GroundLevel)
+            if (Position.Y + (texture.Height/2) > GroundLevel)
             {
-                Position = new Vector2(Position.X, Globals.GroundLevel- (texture.Height / 4));
+                Position = new Vector2(Position.X, GroundLevel- (texture.Height / 2));
             }
 
-            if (Position.Y + (texture.Height / 4) < Globals.GroundLevel)
+            if (Position.Y + (texture.Height / 2) < GroundLevel)
             {
                 Position.Y += Globals.Gravity;                
             }
@@ -76,6 +82,5 @@ namespace ISS
         {
             _anims.Draw(Position);
         }
-
     }
 }
