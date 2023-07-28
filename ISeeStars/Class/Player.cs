@@ -16,7 +16,7 @@ namespace ISS
         public Vector2 Origin { get; }
         public int GroundLevel = Globals.GroundLevel;
         public Rectangle Rectangle { get; set; }
-        public Vector2 Velocity;
+        //public Vector2 Velocity;
 
         private readonly AnimationManager _anims = new AnimationManager();
 

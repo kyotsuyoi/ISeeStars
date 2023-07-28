@@ -25,13 +25,13 @@ namespace ISS
             BackgroundMovement = 0;
             _direction = Vector2.Zero;
 
-            if (ks.IsKeyDown(Keys.D) && !Crouch)
+            if ((ks.IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed) && !Crouch)
             {
                 _direction.X++;
                 BackgroundMovement = -_BackgroundSpeed;
                 _side = 'R';
             }
-            else if (ks.IsKeyDown(Keys.A) && !Crouch)
+            else if (ks.IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed && !Crouch)
             {
                 _direction.X--;
                 BackgroundMovement = +_BackgroundSpeed;
@@ -39,20 +39,20 @@ namespace ISS
             }
 
             Crouch = false;
-            if (ks.IsKeyDown(Keys.S))
+            if (ks.IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed)
             {
                 Crouch = true;
             }
 
             Running = false;
             _BackgroundSpeed = 100f;
-            if (ks.IsKeyDown(Keys.H) && !Crouch)
+            if (ks.IsKeyDown(Keys.H) || GamePad.GetState(PlayerIndex.One).Buttons.X == ButtonState.Pressed && !Crouch)
             {
                 Running = true;
                 _BackgroundSpeed = 200f;
             }
 
-            if (ks.IsKeyDown(Keys.Space) && JumpDelay <= 0 && !Crouch)
+            if (ks.IsKeyDown(Keys.Space) || GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Pressed && JumpDelay <= 0 && !Crouch)
             {
                 Jump = true;
                 JumpDelay=100;

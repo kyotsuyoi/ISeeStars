@@ -15,6 +15,8 @@ namespace ISS
         private int _interactObjectsId = -1;
         private readonly List<TileObject> _objects = new List <TileObject>();
 
+        private float lastY = 0;
+
         public GameManager(Vector2 playerPosition)
         {
             _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL0"), 0.0f, 0.0f));
@@ -84,12 +86,14 @@ namespace ISS
         {
             for (int i = 0; i < _objects.Count; i++)
             {
+                var v = (_objects[i].Position - player.Position).Length();
+                var c = (_objects[i].Origin.X + player.Origin.X);
                 if ((_objects[i].Position - player.Position).Length() < (_objects[i].Origin.X + player.Origin.X))
                 {
                     player.interact = true;
                     _interactObjectsId = i;
 
-                    if(player.Position.Y + 80 > _objects[i].Position.Y)
+                    if(player.Position.Y + 80 >= _objects[i].Position.Y && lastY < player.Position.Y)
                     {
                         player.Position.Y = _objects[i].Position.Y - 80;
                     }
@@ -99,18 +103,7 @@ namespace ISS
                 player.interact = false;
                 _interactObjectsId = -1;
             }
-        }
-
-        private void CheckCollisions2(Player player)
-        {
-            for (int i = 0; i < _objects.Count; i++)
-            {
-                if ((_objects[i].Position - player.Position).Length() < (_objects[i].Origin.X + player.Origin.X))
-                {
-                    
-                    break;
-                }
-            }
+            lastY = player.Position.Y;
         }
     }
 }
