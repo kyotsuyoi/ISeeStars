@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Game002</RootNamespace>
-    <AssemblyName>Game002</AssemblyName>
+    <RootNamespace>ISeeStars</RootNamespace>
+    <AssemblyName>ISeeStars</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.19041.0</TargetPlatformVersion>
@@ -95,7 +95,10 @@
     </Compile>
     <Compile Include="Class\Managers\BGManager.cs" />
     <Compile Include="Class\Common\Animation.cs" />
-    <Compile Include="Class\TileObject.cs" />
+    <Compile Include="Class\GameObject.cs" />
+    <Compile Include="Class\Managers\SongManager.cs" />
+    <Compile Include="Class\ProgressBar.cs" />
+    <Compile Include="Class\ProgressBarAnimated.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Class\Managers\AnimationManager.cs" />
     <Compile Include="Class\Managers\GameManager.cs" />
@@ -115,11 +118,6 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\Layer0.png" />
-    <Content Include="Content\Layer1.png" />
-    <Content Include="Content\Layer2.png" />
-    <Content Include="Content\Layer3.png" />
-    <Content Include="Content\Layer4.png" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />

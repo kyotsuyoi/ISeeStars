@@ -2,33 +2,27 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
-using MonoGame.Extended.Collisions;
-using MonoGame.Extended;
 
 public class Game : Microsoft.Xna.Framework.Game
 {
     private readonly GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
-    private GameManager _gm;
-
-    const int MapWidth = 500;
-    const int MapHeight = 768;
+    private GameManager _gameManager;
 
     public Game()
     {
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
-        IsMouseVisible = true;
+        //IsMouseVisible = true;
     }
 
     protected override void Initialize()
     {
-        Globals.ScreenX = 1024;
-        Globals.ScreenY = 768;
-        Globals.GroundLevel = 700;
+        //_graphics.IsFullScreen = true;
+        Globals.ScreenSize = new Vector2(1024, 768);
 
-        _graphics.PreferredBackBufferWidth = Globals.ScreenX;
-        _graphics.PreferredBackBufferHeight = Globals.ScreenY;
+        _graphics.PreferredBackBufferWidth = (int)Globals.ScreenSize.X;
+        _graphics.PreferredBackBufferHeight = (int)Globals.ScreenSize.Y;
         _graphics.ApplyChanges();
 
         Globals.Content = Content;
@@ -41,8 +35,8 @@ public class Game : Microsoft.Xna.Framework.Game
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         Globals.SpriteBatch = _spriteBatch;
-        _gm = new GameManager(new Vector2(_graphics.PreferredBackBufferWidth / 2, /*(_graphics.PreferredBackBufferHeight / 2) + 100*/0));
-    }
+        _gameManager = new GameManager(new Vector2(_graphics.PreferredBackBufferWidth / 2, 0));
+    }    
 
     protected override void Update(GameTime gameTime)
     {
@@ -51,18 +45,18 @@ public class Game : Microsoft.Xna.Framework.Game
             Exit();
         }
 
-        Globals.Update(gameTime);
-        _gm.Update();
+        Globals.Update(gameTime, new Vector2(_graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight));
+        _gameManager.Update();
 
         base.Update(gameTime);
     }
 
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(Color.CornflowerBlue);
+        GraphicsDevice.Clear(Color.Black);
 
         _spriteBatch.Begin(sortMode: SpriteSortMode.FrontToBack);
-        _gm.Draw();
+        _gameManager.Draw();
         _spriteBatch.End();
 
         base.Draw(gameTime);

@@ -53,11 +53,11 @@ namespace ISS
             _frameTimeLeft = _frameTime;
         }
 
-        public void Update()
+        public void Update(bool fastAnimation)
         {
             if (!_active) return;
 
-            if (InputManager.Running)
+            if (fastAnimation)
             {
                 _frameTimeLeft -= Globals.ElapsedSeconds * 2;
             }
@@ -82,8 +82,8 @@ namespace ISS
             }
 
             //pos = new Vector2 (pos.X - _sourceRectangles[_frame].Width/2, pos.Y - _sourceRectangles[_frame].Height / 2);
-            pos = new Vector2 (pos.X+5, pos.Y);
-            Globals.SpriteBatch.Draw(_texture, pos, _sourceRectangles[_frame], Color.White, 0, Vector2.Zero, Vector2.One, spriteEffects, 1);
+            //pos = new Vector2 (pos.X+5, pos.Y);
+            Globals.SpriteBatch.Draw(_texture, pos, _sourceRectangles[_frame], Color.White, 0, Vector2.Zero, Vector2.One, spriteEffects, 0.9f);
         }
     }
 

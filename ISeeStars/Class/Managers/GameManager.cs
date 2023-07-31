@@ -8,12 +8,13 @@ namespace ISS
     public class GameManager
     {
         private readonly BGManager _bgm = new BGManager();
-        private readonly InputManager _im = new InputManager();
-        private Player player;
+        private InputManager _inputManager = new InputManager();
+        public Player player;
+        public SongManager songManager;
         //private TileObject tileObject;
 
         private int _interactObjectsId = -1;
-        private readonly List<TileObject> _objects = new List <TileObject>();
+        private readonly List<GameObject> _objects = new List <GameObject>();
 
         private float lastY = 0;
 
@@ -25,26 +26,30 @@ namespace ISS
             _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL3"), 0.3f, 1.0f));
             //_bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL4"), 0.4f, 0.2f, -100.0f));
 
+            songManager = new SongManager();
+
             player = new Player(playerPosition);
-            TileObject tileObject = new TileObject(new Vector2(10,400));
-            TileObject tileObject2 = new TileObject(new Vector2(85, 0));
+            GameObject tileObject = new GameObject(new Vector2(10,0), 0);
+            GameObject tileObject2 = new GameObject(new Vector2(110, 0), 1);
+            GameObject tileObject3 = new GameObject(new Vector2(210, 0), 2);
 
             _objects.Add(tileObject);
-            //_objects.Add(tileObject2);
+            _objects.Add(tileObject2);
+            _objects.Add(tileObject3);
         }
 
         public void Update()
         {
-            _im.Update();
-            _bgm.Update(_im.BackgroundMovement);
+            _inputManager.Update(player, songManager);
+            _bgm.Update(_inputManager.BackgroundMovement);
             //tileObject.Update(_im.BackgroundMovement);
             foreach (var object1 in _objects)
             {
-                object1.Update(_im.BackgroundMovement);
+                object1.Update(_inputManager.BackgroundMovement);
             }
             player.Update();
 
-            //CheckCollisions();
+            CheckCollisions();
             CheckCollisions(player);
         }
 
@@ -58,13 +63,61 @@ namespace ISS
             }
             player.Draw();
 
-            SpriteFont font = Globals.Content.Load<SpriteFont>("fontMedium"); //480  612
-            Globals.SpriteBatch.DrawString(font, "Depth:" + (int)player.Position.Y, new Vector2(10, 10), Color.Black);
-            if (player.interact)
+            SpriteFont font = Globals.Content.Load<SpriteFont>("fontMedium");
+            Globals.SpriteBatch.DrawString(font, "Depth:" + (int)(player.Position.Y + player.Size.Y), new Vector2(10, 120), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "Depth:" + (int)(player.Position.Y + player.Size.Y), new Vector2(12, 122), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            //Globals.SpriteBatch.DrawString(font, "Position:" + _bgm.GetLayer3().Layer0PositionX(), new Vector2(10, 100), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            //Globals.SpriteBatch.DrawString(font, "Position:" + _bgm.GetLayer3().Layer0PositionX(), new Vector2(12, 102), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            Globals.SpriteBatch.DrawString(font, "Grouded:" + player.Grounded, new Vector2(10, 140), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "Grouded:" + player.Grounded, new Vector2(12, 142), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            Globals.SpriteBatch.DrawString(font, "Jump:" + player.Jump, new Vector2(10, 160), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "Jump:" + player.Jump, new Vector2(12, 162), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            Globals.SpriteBatch.DrawString(font, "Float:" + player.Float, new Vector2(10, 180), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "Float:" + player.Float, new Vector2(12, 182), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            Globals.SpriteBatch.DrawString(font, "Running:" + player.Running, new Vector2(10, 200), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "Running:" + player.Running, new Vector2(12, 202), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            if (player.Interact)
             {
-                Globals.SpriteBatch.DrawString(font, "Y", new Vector2(_objects[_interactObjectsId].Position.X + _objects[_interactObjectsId].Origin.X-5, _objects[_interactObjectsId].Position.Y-10), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
-                Globals.SpriteBatch.DrawString(font, "Y", new Vector2(_objects[_interactObjectsId].Position.X + _objects[_interactObjectsId].Origin.X-7, _objects[_interactObjectsId].Position.Y-12), Color.Yellow, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+                Globals.SpriteBatch.DrawString(font, "Y", new Vector2(
+                    _objects[_interactObjectsId].Position.X + _objects[_interactObjectsId].Origin.X-5, 
+                    _objects[_interactObjectsId].Position.Y-10), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+                Globals.SpriteBatch.DrawString(font, "Y", new Vector2(
+                    _objects[_interactObjectsId].Position.X + _objects[_interactObjectsId].Origin.X-7, 
+                    _objects[_interactObjectsId].Position.Y-12), Color.Yellow, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
             }
+        }
+
+        private void CheckCollisions(Player player)
+        {
+            var isCollide = false;
+            for (int i = 0; i < _objects.Count; i++)
+            {
+                isCollide = SquareCollision(_objects[i].Position, _objects[i].Size, player.Position, player.Size);
+                if (isCollide)
+                {
+                    player.Interact = true;
+                    player.GameObjectInteract = _objects[i];
+                    _interactObjectsId = i;
+                    var bottom = player.Position.Y + player.Size.Y;
+                    var bottomLimit = bottom * 0.9;
+                    if ((bottom >= _objects[i].Position.Y) && (bottomLimit <= _objects[i].Position.Y)
+                        && (lastY < player.Position.Y))
+                    {
+                        player.Position.Y = _objects[i].Position.Y - player.Size.Y;
+                        player.Ground = player.Position.Y + player.Size.Y;
+                    }
+                    break;
+                }
+                player.Interact = false;
+                player.GameObjectInteract = null;
+                _interactObjectsId = -1;
+            }
+            lastY = player.Position.Y;
+
+            if(!isCollide) player.Ground = Globals.GroundLevel;
         }
 
         private void CheckCollisions()
@@ -75,35 +128,25 @@ namespace ISS
                 {
                     if ((_objects[i].Position - _objects[j].Position).Length() < (_objects[i].Origin.X + _objects[j].Origin.X))
                     {
-                        //ResolveCollision(_circles[i], _circles[j]);
+                        _objects[j].Position.Y = _objects[i].Position.Y - _objects[j].Size.Y;
                         break;
                     }
                 }
             }
         }
 
-        private void CheckCollisions(Player player)
+        private bool SquareCollision(Vector2 PositionA, Vector2 SizeA, Vector2 PositionB, Vector2 SizeB)
         {
-            for (int i = 0; i < _objects.Count; i++)
+            if (
+                PositionA.X < PositionB.X + SizeB.X * 0.8 &&
+                PositionA.X + SizeA.X * 0.8 > PositionB.X &&
+                PositionA.Y < PositionB.Y + SizeB.Y *1.1 &&
+                PositionA.Y + SizeA.Y *1.1 > PositionB.Y
+            )
             {
-                var v = (_objects[i].Position - player.Position).Length();
-                var c = (_objects[i].Origin.X + player.Origin.X);
-                if ((_objects[i].Position - player.Position).Length() < (_objects[i].Origin.X + player.Origin.X))
-                {
-                    player.interact = true;
-                    _interactObjectsId = i;
-
-                    if(player.Position.Y + 80 >= _objects[i].Position.Y && lastY < player.Position.Y)
-                    {
-                        player.Position.Y = _objects[i].Position.Y - 80;
-                    }
-
-                    break;
-                }
-                player.interact = false;
-                _interactObjectsId = -1;
+                return true;
             }
-            lastY = player.Position.Y;
+            return false;
         }
     }
 }

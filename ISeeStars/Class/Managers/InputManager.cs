@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Windows.UI.Xaml;
 
 namespace ISS
 {
@@ -12,53 +13,72 @@ namespace ISS
         public static Vector2 Direction => _direction;
         public static bool Moving => _direction != Vector2.Zero;
         public float BackgroundMovement { get; set; }
-        public static bool Jump { get; set; }
-        public static bool Crouch { get; set; }
-        public static bool Running { get; set; }
         public static char Side => _side;
-
-        public static int JumpDelay { get; set; }
-
-        public void Update()
+        public void Update(Player player, SongManager songManager)
         {
             KeyboardState ks = Keyboard.GetState();
             BackgroundMovement = 0;
             _direction = Vector2.Zero;
 
-            if ((ks.IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed) && !Crouch)
+            if ((ks.IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed) && !player.Crouch)
             {
                 _direction.X++;
                 BackgroundMovement = -_BackgroundSpeed;
                 _side = 'R';
             }
-            else if (ks.IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed && !Crouch)
+            else if ((ks.IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed) && !player.Crouch)
             {
                 _direction.X--;
                 BackgroundMovement = +_BackgroundSpeed;
                 _side = 'L';
             }
 
-            Crouch = false;
-            if (ks.IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed)
+            player.Crouch = false;
+            if (ks.IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed && !player.Jump)
             {
-                Crouch = true;
+                player.Crouch = true;
             }
 
-            Running = false;
-            _BackgroundSpeed = 100f;
-            if (ks.IsKeyDown(Keys.H) || GamePad.GetState(PlayerIndex.One).Buttons.X == ButtonState.Pressed && !Crouch)
+            if (ks.IsKeyDown(Keys.C) || GamePad.GetState(PlayerIndex.One).Triggers.Left == 1.0f && player.getEnergy() > 0) 
             {
-                Running = true;
+                player.Float = true;
+            }
+            else
+            {
+                player.Float = false;
+            }
+
+            player.Running = false;
+            _BackgroundSpeed = 100f;
+            if ((ks.IsKeyDown(Keys.H) || GamePad.GetState(PlayerIndex.One).Buttons.X == ButtonState.Pressed) && !player.Crouch && player.Oxygen() > 0)
+            {
+                player.Running = true;
                 _BackgroundSpeed = 200f;
             }
 
-            if (ks.IsKeyDown(Keys.Space) || GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Pressed && JumpDelay <= 0 && !Crouch)
+            if ((ks.IsKeyDown(Keys.Space) || GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Pressed) && !player.Jump && !player.Crouch && player.Grounded)
             {
-                Jump = true;
-                JumpDelay=100;
+                player.Jump = true;
             }
 
-            JumpDelay--;
+            if ((ks.IsKeyDown(Keys.I) || GamePad.GetState(PlayerIndex.One).Buttons.Y == ButtonState.Pressed))
+            {
+                player.Interaction();
+            }
+
+            if(ks.IsKeyDown(Keys.Up))
+            {
+                songManager.MediaPlayer_VolumePlus(true);
+            }
+
+            if (ks.IsKeyDown(Keys.Down))
+            {
+                songManager.MediaPlayer_VolumePlus(false);
+            }
+
+            //MouseLeftClicked = (Mouse.GetState().LeftButton == ButtonState.Pressed) && (_lastMouseState.LeftButton == ButtonState.Released);
+            //MouseRightClicked = (Mouse.GetState().RightButton == ButtonState.Pressed) && (_lastMouseState.RightButton == ButtonState.Released);
+            //_lastMouseState = Mouse.GetState();
         }
     }
 }
