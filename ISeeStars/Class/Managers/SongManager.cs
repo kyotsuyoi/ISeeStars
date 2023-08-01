@@ -12,7 +12,6 @@ namespace ISS
 
             MediaPlayer.IsRepeating = true;
             MediaPlayer.Play(BGSong);
-            //MediaPlayer.MediaStateChanged += MediaPlayer_MediaStateChanged;
         }
         public void MediaPlayer_VolumePlus(bool plus)
         {

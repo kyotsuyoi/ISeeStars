@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
+using Newtonsoft.Json.Bson;
 
 namespace ISS
 {
@@ -11,15 +12,15 @@ namespace ISS
         public Vector2 Size;
         private float speed;
         public float JumpPower;
-        //public float JumpDelay;
         public bool Jump = false;
-        public bool Float = false;
+        private bool fly = false;
         //private bool attacking;
         public bool Running;
         public bool Crouch;
         public bool Interact = false;
         public GameObject GameObjectInteract = null;
-        public Vector2 Origin { get; }
+        public Vector2 Origin { get; }        
+
         //public Vector2 Velocity;
         public float Ground;
         public bool Grounded;
@@ -30,6 +31,9 @@ namespace ISS
         private float _oxygen;
         private readonly float _maxEnergy;
         private float _energy;
+
+        private int energyCooldown = 0;
+
         //private readonly ProgressBar _healthBar;
         private readonly ProgressBarAnimated _healthBarAnimated;
         private readonly ProgressBarAnimated _oxigenBarAnimated;
@@ -40,15 +44,16 @@ namespace ISS
         public Player(Vector2 position, float health = 100f, float oxigen = 100f, float energy = 100f)
         {
             speed = 0f;
-            texture = Globals.Content.Load<Texture2D>("sprite_player01x4_helmet_a");
-            _anims.AddAnimation(new Vector2(0, 0), new Animation(texture, 4, 2, 0, 2, 0.25f, 1)); //Stand
-            _anims.AddAnimation(new Vector2(1, 0), new Animation(texture, 4, 2, 0, 3, 0.1f, 2));  //Right
-            _anims.AddAnimation(new Vector2(-1, 0), new Animation(texture, 4, 2, 0, 3, 0.1f, 2)); //Left
-            _anims.AddAnimation(new Vector2(0, -1), new Animation(texture, 4, 2, 0, 0, 0.25f, 2)); //Jump            
-            _anims.AddAnimation(new Vector2(0, 1), new Animation(texture, 4, 2, 3, 3, 0.25f, 1)); //Crouch
+            texture = Globals.Content.Load<Texture2D>("sprite_player02x4");
+            _anims.AddAnimation(new Vector2(0, 0), new Animation(texture, 4, 3, 0, 2, 0.25f, 1)); //Stand
+            _anims.AddAnimation(new Vector2(1, 0), new Animation(texture, 4, 3, 0, 3, 0.1f, 2));  //Right
+            _anims.AddAnimation(new Vector2(-1, 0), new Animation(texture, 4, 3, 0, 3, 0.1f, 2)); //Left
+            _anims.AddAnimation(new Vector2(0, -1), new Animation(texture, 4, 3, 0, 3, 0.05f, 3)); //Jump & Fly
+            _anims.AddAnimation(new Vector2(0, 1), new Animation(texture, 4, 3, 3, 3, 0.25f, 1)); //Crouch
+            //_anims.AddAnimation(new Vector2(0, -1), new Animation(texture, 4, 3, 0, 3, 0.25f, 3)); //Fly
 
-            Origin = new Vector2((texture.Width / 4)/2, (texture.Height / 2)/2);
-            Size = new Vector2(texture.Width / 4, texture.Height / 2);
+            Origin = new Vector2((texture.Width / 4)/2, (texture.Height / 3)/2);
+            Size = new Vector2(texture.Width / 4, texture.Height / 3);
             Position = new Vector2(position.X + Size.X/2, position.Y);
 
             var BarBackground = Globals.Content.Load<Texture2D>("BarBackground");
@@ -78,7 +83,7 @@ namespace ISS
             {
                 Position += Vector2.Normalize(InputManager.Direction) * speed * Globals.ElapsedSeconds;
             }
-            _anims.Update(InputManager.Direction, Running);
+            _anims.Update(InputManager.Direction, Running, true);
             if (Running)
             {
                 OxygenLost();
@@ -88,11 +93,30 @@ namespace ISS
 
             if (Crouch)
             {
-                _anims.Update(new Vector2(0, 1), false);
+                _anims.Update(new Vector2(0, 1), false, false);
+            }
+
+            if (Interact)
+            {
+                switch (GameObjectInteract.Type)
+                {
+                    case 0:
+                        break;
+
+                    case 1:
+                        OxygenCharge();
+                        break;
+
+                    case 2:
+                        EnergyCharge();
+                        break;
+                }
             }
 
             Position.X = Globals.ScreenSize.X/2 - Size.X/2;
-            OxigenLost();
+            OxygenLost();
+            //EnergyCharge();
+            energyCooldown--;
 
             //_healthBar.Update(_health);
             _healthBarAnimated.Update(_health);
@@ -109,9 +133,9 @@ namespace ISS
             _energyBarAnimated.Draw();
         }
 
-        public void TakeDamage(float dmg)
+        public void TakeDamage(float damage)
         {
-            _health -= dmg;
+            _health -= damage;
             if (_health < 0) _health = 0;
         }
 
@@ -127,7 +151,7 @@ namespace ISS
             if (_health > _maxHealth) _health = _maxHealth;
         }
 
-        public void OxigenLost()
+        public void OxygenLost()
         {
             _oxygen -= Globals.ElapsedSeconds;
             if (_oxygen <= 0)
@@ -144,16 +168,33 @@ namespace ISS
             if (_oxygen > _maxOxygen) _oxygen = _maxOxygen;
         }
 
-        public void OxygenLost()
+        public void OxygenCharge()
         {
-            _oxygen -= Globals.ElapsedSeconds * 1;
-            if (_oxygen < 0) _oxygen = 0;
+            _oxygen += Globals.ElapsedSeconds * 10f;
+            if (_oxygen >= 100f) _oxygen = 100f;
         }
+
+        //public void OxygenLost()
+        //{
+        //    _oxygen -= Globals.ElapsedSeconds;
+        //    if (_oxygen < 0) _oxygen = 0;
+        //}
 
         public void EnergyLost()
         {
             _energy -= Globals.ElapsedSeconds*20;
-            if (_energy < 0) _energy = 0;
+            if (_energy < 0)
+            {
+                energyCooldown = 100;
+                _energy = 0;
+            }
+        }
+
+        public void EnergyCharge()
+        {
+            if (energyCooldown > 0) return;
+            _energy += Globals.ElapsedSeconds * 0.5f;
+            if (_energy >= 100f) _energy = 100f;
         }
 
         public void EnergyRefill()
@@ -171,14 +212,28 @@ namespace ISS
         {
             if (Jump && JumpPower <= 0)
             {
-                JumpPower = 850f;
+                JumpPower = 875f;
                 Grounded = false;
+            }
+
+            if (JumpPower > 0 && !fly)
+            {
+                Position += Vector2.Normalize(new Vector2(0, -1)) * JumpPower * Globals.ElapsedSeconds;
+                JumpPower -= Globals.Gravity;
+                if(JumpPower < 0) JumpPower = 0;
             }
 
             if (Position.Y + Size.Y < Ground)
             {
                 Position.Y += Globals.Gravity;
-                _anims.Update(new Vector2(0, -1), false);
+                if (fly)
+                {
+                    _anims.Update(new Vector2(0, -1), false, true);
+                }
+                else
+                {
+                    _anims.Update(new Vector2(0, -1), false, false);
+                }
             }
 
             if (Position.Y + Size.Y > Ground)
@@ -186,23 +241,16 @@ namespace ISS
                 Position = new Vector2(Position.X, Ground - Size.Y);
                 JumpPower = 0;
                 Jump = false;
-                Float = false;
+                fly = false;
                 Grounded = true;
             }
 
-            if (JumpPower > 0 && !Float)
-            {
-                Position += Vector2.Normalize(new Vector2(0, -1)) * JumpPower * Globals.ElapsedSeconds;
-                JumpPower -= Globals.Gravity;
-            }
-
-            if (Float)
+            if (fly)
             {
                 if (Grounded)
                 {
-                    JumpPower += 600;
+                    //JumpPower += 600;
                 }
-                JumpPower+=2;
                 Position += Vector2.Normalize(new Vector2(0, -1)) * JumpPower * Globals.ElapsedSeconds;
                 Grounded = false;
                 Jump = false;
@@ -234,6 +282,25 @@ namespace ISS
         public float Oxygen()
         {
             return _oxygen;
+        }       
+
+        public void setFly(float value) { 
+            if (value > 0)
+            {
+                fly = true;
+                if (value < 0) value = 0;
+                JumpPower = 800f * value;
+                if (JumpPower < 300f) JumpPower = 300f;
+            }
+            else
+            {
+                fly = false;
+            }
+        }
+
+        public bool isFly()
+        {
+            return fly;
         }
     }
 }

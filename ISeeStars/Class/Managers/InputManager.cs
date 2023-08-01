@@ -34,18 +34,18 @@ namespace ISS
             }
 
             player.Crouch = false;
-            if (ks.IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed && !player.Jump)
+            if (ks.IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed && !player.Jump && !player.isFly())
             {
                 player.Crouch = true;
             }
 
-            if (ks.IsKeyDown(Keys.C) || GamePad.GetState(PlayerIndex.One).Triggers.Left == 1.0f && player.getEnergy() > 0) 
+            if (ks.IsKeyDown(Keys.C) || GamePad.GetState(PlayerIndex.One).Triggers.Left > 0 && player.getEnergy() > 0)
             {
-                player.Float = true;
+                player.setFly(GamePad.GetState(PlayerIndex.One).Triggers.Left);                
             }
             else
             {
-                player.Float = false;
+                player.setFly(0);
             }
 
             player.Running = false;

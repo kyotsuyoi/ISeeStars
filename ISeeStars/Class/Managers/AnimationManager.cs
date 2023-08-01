@@ -14,12 +14,12 @@ namespace ISS
             _lastKey = key;
         }
 
-        public void Update(object key, bool fastAnimation)
+        public void Update(object key, bool fastAnimation, bool animate)
         {
             if (_anims.TryGetValue(key, out Animation value))
             {
                 value.Start();
-                _anims[key].Update(fastAnimation);
+                _anims[key].Update(fastAnimation, animate);
                 _lastKey = key;
             }
         }

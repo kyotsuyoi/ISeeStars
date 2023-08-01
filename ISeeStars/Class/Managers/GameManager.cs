@@ -16,14 +16,15 @@ namespace ISS
         private int _interactObjectsId = -1;
         private readonly List<GameObject> _objects = new List <GameObject>();
 
+        //Verify if the player is falling
         private float lastY = 0;
 
         public GameManager(Vector2 playerPosition)
         {
-            _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL0"), 0.0f, 0.0f));
-            _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL1"), 0.1f, 0.2f));
-            _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL2"), 0.2f, 0.5f));
-            _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL3"), 0.3f, 1.0f));
+            _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL0002"), 0.0f, 0.0f, true));
+            _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL1"), 0.1f, 0.2f, false));
+            _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL2"), 0.2f, 0.5f, false));
+            _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL3"), 0.3f, 1.0f, false));
             //_bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL4"), 0.4f, 0.2f, -100.0f));
 
             songManager = new SongManager();
@@ -64,20 +65,31 @@ namespace ISS
             player.Draw();
 
             SpriteFont font = Globals.Content.Load<SpriteFont>("fontMedium");
-            Globals.SpriteBatch.DrawString(font, "Depth:" + (int)(player.Position.Y + player.Size.Y), new Vector2(10, 120), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
-            Globals.SpriteBatch.DrawString(font, "Depth:" + (int)(player.Position.Y + player.Size.Y), new Vector2(12, 122), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            var hh = (int)Globals.Time / 60;
+            var mm = (int)Globals.Time % 60;
+            Globals.SpriteBatch.DrawString(font, "Time:" + hh.ToString().PadLeft(2, '0') + ":" + mm.ToString().PadLeft(2, '0'), new Vector2(10, 120), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "Time:" + hh.ToString().PadLeft(2, '0') + ":" + mm.ToString().PadLeft(2, '0'), new Vector2(12, 122), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            Globals.SpriteBatch.DrawString(font, "Depth:" + (int)(player.Position.Y + player.Size.Y), new Vector2(10, 140), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "Depth:" + (int)(player.Position.Y + player.Size.Y), new Vector2(12, 142), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
 
             //Globals.SpriteBatch.DrawString(font, "Position:" + _bgm.GetLayer3().Layer0PositionX(), new Vector2(10, 100), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
             //Globals.SpriteBatch.DrawString(font, "Position:" + _bgm.GetLayer3().Layer0PositionX(), new Vector2(12, 102), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
 
-            Globals.SpriteBatch.DrawString(font, "Grouded:" + player.Grounded, new Vector2(10, 140), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
-            Globals.SpriteBatch.DrawString(font, "Grouded:" + player.Grounded, new Vector2(12, 142), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
             Globals.SpriteBatch.DrawString(font, "Jump:" + player.Jump, new Vector2(10, 160), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
             Globals.SpriteBatch.DrawString(font, "Jump:" + player.Jump, new Vector2(12, 162), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
-            Globals.SpriteBatch.DrawString(font, "Float:" + player.Float, new Vector2(10, 180), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
-            Globals.SpriteBatch.DrawString(font, "Float:" + player.Float, new Vector2(12, 182), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
-            Globals.SpriteBatch.DrawString(font, "Running:" + player.Running, new Vector2(10, 200), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
-            Globals.SpriteBatch.DrawString(font, "Running:" + player.Running, new Vector2(12, 202), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            Globals.SpriteBatch.DrawString(font, "Fly:" + player.isFly(), new Vector2(10, 180), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1); ;
+            Globals.SpriteBatch.DrawString(font, "Fly:" + player.isFly(), new Vector2(12, 182), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            Globals.SpriteBatch.DrawString(font, "Run:" + player.Running, new Vector2(10, 200), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "Run:" + player.Running, new Vector2(12, 202), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            Globals.SpriteBatch.DrawString(font, "Crouch:" + player.Crouch, new Vector2(10, 220), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "Crouch:" + player.Crouch, new Vector2(12, 222), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            Globals.SpriteBatch.DrawString(font, "JumpPower:" + player.JumpPower, new Vector2(10, 240), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "JumpPower:" + player.JumpPower, new Vector2(12, 242), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            Globals.SpriteBatch.DrawString(font, "Ground:" + player.Grounded, new Vector2(10, 260), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "Ground:" + player.Grounded, new Vector2(12, 262), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
 
             if (player.Interact)
             {
@@ -102,12 +114,13 @@ namespace ISS
                     player.GameObjectInteract = _objects[i];
                     _interactObjectsId = i;
                     var bottom = player.Position.Y + player.Size.Y;
-                    var bottomLimit = bottom * 0.9;
-                    if ((bottom >= _objects[i].Position.Y) && (bottomLimit <= _objects[i].Position.Y)
+                    var bottomLimit = bottom - player.Size.Y * 0.1;
+                    if ((bottom >= _objects[i].Position.Y) && (bottomLimit < _objects[i].Position.Y)
                         && (lastY < player.Position.Y))
                     {
                         player.Position.Y = _objects[i].Position.Y - player.Size.Y;
-                        player.Ground = player.Position.Y + player.Size.Y;
+                        player.Ground = _objects[i].Position.Y;
+                        player.Grounded = true;
                     }
                     break;
                 }
