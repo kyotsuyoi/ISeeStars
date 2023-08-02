@@ -37,7 +37,7 @@ namespace ISS
             if (_movementY)
             {
                 //_rotate += 0.0001f;
-                _rotate += 0.0001f;
+                _rotate += 0.0005f;
                 if (_rotate > 6.278f)
                 {
                     _rotate = 0;

@@ -14,6 +14,9 @@ namespace ISS
         public static bool Moving => _direction != Vector2.Zero;
         public float BackgroundMovement { get; set; }
         public static char Side => _side;
+
+        public static bool interact_key_pressed = false;
+
         public void Update(Player player, SongManager songManager)
         {
             KeyboardState ks = Keyboard.GetState();
@@ -49,10 +52,19 @@ namespace ISS
             }
 
             player.Running = false;
-            _BackgroundSpeed = 100f;
             if ((ks.IsKeyDown(Keys.H) || GamePad.GetState(PlayerIndex.One).Buttons.X == ButtonState.Pressed) && !player.Crouch && player.Oxygen() > 0)
             {
                 player.Running = true;
+            }
+
+            _BackgroundSpeed = 100f;
+            if (player.isFly())
+            {
+                _BackgroundSpeed = 300f;
+            }
+
+            if (player.Running)
+            {
                 _BackgroundSpeed = 200f;
             }
 
@@ -61,12 +73,16 @@ namespace ISS
                 player.Jump = true;
             }
 
-            if ((ks.IsKeyDown(Keys.I) || GamePad.GetState(PlayerIndex.One).Buttons.Y == ButtonState.Pressed))
+            if ((ks.IsKeyDown(Keys.I) || GamePad.GetState(PlayerIndex.One).Buttons.Y == ButtonState.Pressed) && !interact_key_pressed)
             {
+                interact_key_pressed = true;
                 player.Interaction();
             }
+            if(ks.IsKeyDown(Keys.I) || GamePad.GetState(PlayerIndex.One).Buttons.Y == ButtonState.Released){
+                interact_key_pressed = false;
+            }
 
-            if(ks.IsKeyDown(Keys.Up))
+            if (ks.IsKeyDown(Keys.Up))
             {
                 songManager.MediaPlayer_VolumePlus(true);
             }

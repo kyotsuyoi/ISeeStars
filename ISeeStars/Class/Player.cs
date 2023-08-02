@@ -79,11 +79,19 @@ namespace ISS
         //public bool Attacking { get => attacking; set => attacking = value; }
         public void Update()
         {
-            if (InputManager.Moving)
+            //if (InputManager.Moving)
+            //{
+            //    Position += Vector2.Normalize(InputManager.Direction) * speed * Globals.ElapsedSeconds;
+            //}
+            if (Running || fly)
             {
-                Position += Vector2.Normalize(InputManager.Direction) * speed * Globals.ElapsedSeconds;
+                _anims.Update(InputManager.Direction, true, true);
             }
-            _anims.Update(InputManager.Direction, Running, true);
+            else
+            {
+                _anims.Update(InputManager.Direction, false, true);
+            }
+
             if (Running)
             {
                 OxygenLost();
@@ -101,6 +109,7 @@ namespace ISS
                 switch (GameObjectInteract.Type)
                 {
                     case 0:
+                        HeathCharge();
                         break;
 
                     case 1:
@@ -151,6 +160,18 @@ namespace ISS
             if (_health > _maxHealth) _health = _maxHealth;
         }
 
+        public void HeathCharge()
+        {
+            //_health += Globals.ElapsedSeconds * 1f;
+            //if (_health >= 100f) _oxygen = 100f;
+            if((_oxygen > 0 && _energy > 0) && !GameObjectInteract.IsFull())
+            {
+                _oxygen -= Globals.ElapsedSeconds * 1f;
+                _energy -= Globals.ElapsedSeconds * 1f;
+                GameObjectInteract.UpdateLoadingBar(true);
+            }
+        }
+
         public void OxygenLost()
         {
             _oxygen -= Globals.ElapsedSeconds;
@@ -174,15 +195,9 @@ namespace ISS
             if (_oxygen >= 100f) _oxygen = 100f;
         }
 
-        //public void OxygenLost()
-        //{
-        //    _oxygen -= Globals.ElapsedSeconds;
-        //    if (_oxygen < 0) _oxygen = 0;
-        //}
-
-        public void EnergyLost()
+        public void EnergyLost(float value = 10)
         {
-            _energy -= Globals.ElapsedSeconds*20;
+            _energy -= Globals.ElapsedSeconds * value;
             if (_energy < 0)
             {
                 energyCooldown = 100;
@@ -254,7 +269,7 @@ namespace ISS
                 Position += Vector2.Normalize(new Vector2(0, -1)) * JumpPower * Globals.ElapsedSeconds;
                 Grounded = false;
                 Jump = false;
-                EnergyLost();
+                EnergyLost(JumpPower * 0.02f);
             }
         }
 
@@ -265,15 +280,24 @@ namespace ISS
                 switch (GameObjectInteract.Type)
                 {
                     case 0:
-                        HealthRefill();
+                        if (_health < 100 && GameObjectInteract.ConsumeRefill())
+                        {
+                            HealthRefill();
+                        }
                         break;
 
                     case 1:
-                        OxygenRefill();
+                        if (_oxygen < 100 && GameObjectInteract.ConsumeRefill())
+                        {
+                            OxygenRefill();
+                        }
                         break;
 
                     case 2:
-                        EnergyRefill();
+                        if (_energy < 100 && GameObjectInteract.ConsumeRefill())
+                        {
+                            EnergyRefill();
+                        }
                         break;
                 }
             }
