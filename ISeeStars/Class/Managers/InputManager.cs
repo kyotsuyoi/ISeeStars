@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using Windows.UI.Xaml;
 
 namespace ISS
 {

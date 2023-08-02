@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using SharpDX.Direct2D1;
 
 namespace ISS
 {
@@ -14,7 +13,11 @@ namespace ISS
         public int Type;
         private float _refillValue;
         private int _refill = 4;
-        private int _refillBlink;
+        //private int _refillBlink;
+
+        private Texture2D rect_red = null;
+        private Texture2D rect_green = null;
+        private Texture2D rect_bar = null;
 
         public GameObject(Vector2 position, int type)
         {
@@ -24,6 +27,24 @@ namespace ISS
             Size = new Vector2(texture.Width, texture.Height);
             Position = position;
             lastScreenSize = Globals.ScreenSize;
+
+            var rect_size = new Vector2(8, 4);
+            rect_red = new Texture2D(Globals.SpriteBatch.GraphicsDevice, (int)rect_size.X, (int)rect_size.Y);
+            rect_green = new Texture2D(Globals.SpriteBatch.GraphicsDevice, (int)rect_size.X, (int)rect_size.Y);
+
+            var data = new Color[(int)rect_size.X * (int)rect_size.Y];
+            for (int i = 0; i < data.Length; i++) data[i] = Color.Red;
+            rect_red.SetData(data);
+
+            data = new Color[(int)rect_size.X * (int)rect_size.Y];
+            for (int i = 0; i < data.Length; i++) data[i] = Color.Green;
+            rect_green.SetData(data);
+
+            var rect_bar_size = new Vector2(64, 4);
+            rect_bar = new Texture2D(Globals.SpriteBatch.GraphicsDevice, (int)rect_bar_size.X, (int)rect_bar_size.Y);
+            Color[] data_bar = new Color[(int)rect_bar_size.X * (int)rect_bar_size.Y];
+            for (int i = 0; i < data_bar.Length; i++) data_bar[i] = Color.White;
+            rect_bar.SetData(data_bar);
         }
 
         public void Update(float movement) {
@@ -51,6 +72,7 @@ namespace ISS
         {
             Globals.SpriteBatch.Draw(texture, Position, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.8f);
             DrawLoadingBar();
+            DrawRefillBar();
         }
 
         private void DefineType() 
@@ -73,7 +95,8 @@ namespace ISS
         {
             if (Type == 0 || Type == 1 || Type == 2)
             {
-                var rect_width = (int)(64 * _refillValue / 100);
+                //var rect_width = (int)(64 * _refillValue / 100);
+                var rect_width = _refillValue / 100;
                 if (rect_width > 0)
                 {
                     var rect_color = Color.Red;
@@ -82,84 +105,68 @@ namespace ISS
                     if (_refillValue > 75) rect_color = Color.Green;
                     //if (_powerValue > 99) rect_color = Color.Blue;
 
-                    var rect_bar_size = new Vector2(rect_width, 4);
-                    Texture2D rect = new Texture2D(Globals.SpriteBatch.GraphicsDevice, (int)rect_bar_size.X, (int)rect_bar_size.Y);
-                    Color[] data_bar = new Color[(int)rect_bar_size.X * (int)rect_bar_size.Y];
-                    for (int i = 0; i < data_bar.Length; i++) data_bar[i] = rect_color;
-                    rect.SetData(data_bar);
-
                     var rect_pos_bar = new Vector2(Position.X + 4, Position.Y + texture.Height - 16);
-                    Globals.SpriteBatch.Draw(rect, rect_pos_bar, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-                }    
-
-                var rect_size = new Vector2(8, 4);
-                var rect_red = new Texture2D(Globals.SpriteBatch.GraphicsDevice, (int)rect_size.X, (int)rect_size.Y);
-                var rect_green = new Texture2D(Globals.SpriteBatch.GraphicsDevice, (int)rect_size.X, (int)rect_size.Y);
-
-                var data = new Color[(int)rect_size.X * (int)rect_size.Y];
-                for (int i = 0; i < data.Length; i++) data[i] = Color.Red;
-                rect_red.SetData(data);
-
-                data = new Color[(int)rect_size.X * (int)rect_size.Y];
-                for (int i = 0; i < data.Length; i++) data[i] = Color.Green;
-                rect_green.SetData(data);
-
-                var rect_pos = new Vector2(0, 0);
-                switch (_refill)
-                {
-                    case 0:
-                        rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
-                        Globals.SpriteBatch.Draw(rect_red, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-                        break;
-
-                    case 1:
-                        rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
-                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-
-                        rect_pos = new Vector2(Position.X + 20, Position.Y + texture.Height - 28);
-                        Globals.SpriteBatch.Draw(rect_red, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-                        break;
-
-                    case 2:
-                        rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
-                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-
-                        rect_pos = new Vector2(Position.X + 20, Position.Y + texture.Height - 28);
-                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-
-                        rect_pos = new Vector2(Position.X + 44, Position.Y + texture.Height - 28);
-                        Globals.SpriteBatch.Draw(rect_red, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-                        break;
-
-                    case 3:
-                        rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
-                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-
-                        rect_pos = new Vector2(Position.X + 20, Position.Y + texture.Height - 28);
-                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-
-                        rect_pos = new Vector2(Position.X + 44, Position.Y + texture.Height - 28);
-                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-
-                        rect_pos = new Vector2(Position.X + 60, Position.Y + texture.Height - 28);
-                        Globals.SpriteBatch.Draw(rect_red, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-                        break;
-
-                    case 4:
-                        rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
-                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-
-                        rect_pos = new Vector2(Position.X + 20, Position.Y + texture.Height - 28);
-                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-
-                        rect_pos = new Vector2(Position.X + 44, Position.Y + texture.Height - 28);
-                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-
-                        rect_pos = new Vector2(Position.X + 60, Position.Y + texture.Height - 28);
-                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-                        break;
-                }
+                    Globals.SpriteBatch.Draw(rect_bar, rect_pos_bar, null, rect_color, 0, Vector2.Zero, new Vector2(rect_width, 1), SpriteEffects.None, 0.81f);
+                }             
             }          
+        }
+
+        private void DrawRefillBar()
+        {            
+            switch (_refill)
+            {
+                case 0:
+                    var rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
+                    Globals.SpriteBatch.Draw(rect_red, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                    break;
+
+                case 1:
+                    rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
+                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+
+                    rect_pos = new Vector2(Position.X + 20, Position.Y + texture.Height - 28);
+                    Globals.SpriteBatch.Draw(rect_red, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                    break;
+
+                case 2:
+                    rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
+                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+
+                    rect_pos = new Vector2(Position.X + 20, Position.Y + texture.Height - 28);
+                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+
+                    rect_pos = new Vector2(Position.X + 44, Position.Y + texture.Height - 28);
+                    Globals.SpriteBatch.Draw(rect_red, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                    break;
+
+                case 3:
+                    rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
+                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+
+                    rect_pos = new Vector2(Position.X + 20, Position.Y + texture.Height - 28);
+                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+
+                    rect_pos = new Vector2(Position.X + 44, Position.Y + texture.Height - 28);
+                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+
+                    rect_pos = new Vector2(Position.X + 60, Position.Y + texture.Height - 28);
+                    Globals.SpriteBatch.Draw(rect_red, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                    break;
+
+                case 4:
+                    rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
+                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+
+                    rect_pos = new Vector2(Position.X + 20, Position.Y + texture.Height - 28);
+                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+
+                    rect_pos = new Vector2(Position.X + 44, Position.Y + texture.Height - 28);
+                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+
+                    rect_pos = new Vector2(Position.X + 60, Position.Y + texture.Height - 28);
+                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                    break;
+            }
         }
 
         public void UpdateLoadingBar(bool update_type_0)

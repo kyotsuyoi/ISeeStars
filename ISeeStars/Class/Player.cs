@@ -1,7 +1,5 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
-using System.Diagnostics;
-using Newtonsoft.Json.Bson;
 
 namespace ISS
 {
@@ -10,7 +8,7 @@ namespace ISS
         private Texture2D texture;
         public Vector2 Position;
         public Vector2 Size;
-        private float speed;
+        //private float speed;
         public float JumpPower;
         public bool Jump = false;
         private bool fly = false;
@@ -43,7 +41,7 @@ namespace ISS
 
         public Player(Vector2 position, float health = 100f, float oxigen = 100f, float energy = 100f)
         {
-            speed = 0f;
+            //speed = 0f;
             texture = Globals.Content.Load<Texture2D>("sprite_player02x4");
             _anims.AddAnimation(new Vector2(0, 0), new Animation(texture, 4, 3, 0, 2, 0.25f, 1)); //Stand
             _anims.AddAnimation(new Vector2(1, 0), new Animation(texture, 4, 3, 0, 3, 0.1f, 2));  //Right
