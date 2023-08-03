@@ -8,11 +8,12 @@ namespace ISS
         public SongManager() 
         {
             BGSong = Globals.Content.Load<Song>("BGM01");
-            MediaPlayer.Volume = 0.4f;
+            MediaPlayer.Volume = 1f;
 
             MediaPlayer.IsRepeating = true;
             MediaPlayer.Play(BGSong);
         }
+
         public void MediaPlayer_VolumePlus(bool plus)
         {
             // 0.0f is silent, 1.0f is full volume
@@ -26,9 +27,9 @@ namespace ISS
             }
         }
 
-        public void Update()
+        public float GetVolume()
         {
-           
+           return MediaPlayer.Volume;
         }
     }
 }

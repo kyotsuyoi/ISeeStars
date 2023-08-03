@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Windows.Devices.Input.Preview;
 
 namespace ISS
 {
@@ -15,20 +16,38 @@ namespace ISS
         public static char Side => _side;
 
         public static bool interact_key_pressed = false;
+        public static bool menu_key_pressed = false;
+        public static bool menu_keyup_pressed = false;
+        public static bool menu_keydown_pressed = false;
+        public static bool menu_keyselect_pressed = false;
+        public static bool menu_keyleft_pressed = false;
+        public static bool menu_keyright_pressed = false;
 
-        public void Update(Player player, SongManager songManager)
+        public static int menu_selected;
+
+        public static bool exit = false;
+
+        public void Update(Player player, SongManager songManager, GameMenu gameMenu)
         {
-            KeyboardState ks = Keyboard.GetState();
+            KeyboardState keyboard = Keyboard.GetState();
             BackgroundMovement = 0;
             _direction = Vector2.Zero;
 
-            if ((ks.IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed) && !player.Crouch)
+            menu_selected = gameMenu.GetSelected();
+            MenuControl(keyboard, gameMenu, songManager);
+            if (gameMenu.IsActive()) return;
+            PlayerControl(keyboard, player);
+        }
+
+        private void PlayerControl(KeyboardState keyboard, Player player)
+        {
+            if ((keyboard.IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed) && !player.Crouch)
             {
                 _direction.X++;
                 BackgroundMovement = -_BackgroundSpeed;
                 _side = 'R';
             }
-            else if ((ks.IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed) && !player.Crouch)
+            else if ((keyboard.IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed) && !player.Crouch)
             {
                 _direction.X--;
                 BackgroundMovement = +_BackgroundSpeed;
@@ -36,14 +55,20 @@ namespace ISS
             }
 
             player.Crouch = false;
-            if (ks.IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed && !player.Jump && !player.isFly())
+            if (keyboard.IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed && !player.Jump && !player.isFly())
             {
                 player.Crouch = true;
             }
 
-            if (ks.IsKeyDown(Keys.C) || GamePad.GetState(PlayerIndex.One).Triggers.Left > 0 && player.getEnergy() > 0)
+            if ((keyboard.IsKeyDown(Keys.U) || GamePad.GetState(PlayerIndex.One).Triggers.Left > 0) && player.getEnergy() > 0)
             {
-                player.setFly(GamePad.GetState(PlayerIndex.One).Triggers.Left);                
+                if(keyboard.IsKeyDown(Keys.U) && GamePad.GetState(PlayerIndex.One).Triggers.Left <= 0){
+                    player.setFly(1);
+                }
+                else
+                {
+                    player.setFly(GamePad.GetState(PlayerIndex.One).Triggers.Left);
+                }
             }
             else
             {
@@ -51,7 +76,7 @@ namespace ISS
             }
 
             player.Running = false;
-            if ((ks.IsKeyDown(Keys.H) || GamePad.GetState(PlayerIndex.One).Buttons.X == ButtonState.Pressed) && !player.Crouch && player.Oxygen() > 0)
+            if ((keyboard.IsKeyDown(Keys.H) || GamePad.GetState(PlayerIndex.One).Buttons.X == ButtonState.Pressed) && !player.Crouch && player.Oxygen() > 0)
             {
                 player.Running = true;
             }
@@ -67,33 +92,100 @@ namespace ISS
                 _BackgroundSpeed = 200f;
             }
 
-            if ((ks.IsKeyDown(Keys.Space) || GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Pressed) && !player.Jump && !player.Crouch && player.Grounded)
+            if ((keyboard.IsKeyDown(Keys.Space) || GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Pressed) && !player.Jump && !player.Crouch && player.Grounded)
             {
                 player.Jump = true;
             }
 
-            if ((ks.IsKeyDown(Keys.I) || GamePad.GetState(PlayerIndex.One).Buttons.Y == ButtonState.Pressed) && !interact_key_pressed)
+            if ((keyboard.IsKeyDown(Keys.I) || GamePad.GetState(PlayerIndex.One).Buttons.Y == ButtonState.Pressed) && !interact_key_pressed)
             {
                 interact_key_pressed = true;
                 player.Interaction();
             }
-            if(ks.IsKeyDown(Keys.I) || GamePad.GetState(PlayerIndex.One).Buttons.Y == ButtonState.Released){
-                interact_key_pressed = false;
-            }
+            if (keyboard.IsKeyUp(Keys.I) && GamePad.GetState(PlayerIndex.One).Buttons.Y == ButtonState.Released) interact_key_pressed = false;            
+        }
 
-            if (ks.IsKeyDown(Keys.Up))
+        private void MenuControl(KeyboardState keyboard, GameMenu gameMenu, SongManager songManager)
+        {
+            //MENU
+            if ((keyboard.IsKeyDown(Keys.Escape) || GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed) && !menu_key_pressed)
             {
-                songManager.MediaPlayer_VolumePlus(true);
+                if (gameMenu.IsActive())
+                {
+                    gameMenu.Activate(false);
+                    gameMenu.SetSelected();
+                }
+                else
+                {
+                    gameMenu.Activate(true);
+                }
+                menu_key_pressed = true;
             }
+            if (keyboard.IsKeyUp(Keys.Escape) && GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Released) menu_key_pressed = false;
 
-            if (ks.IsKeyDown(Keys.Down))
+            if (!gameMenu.IsActive()) return;
+
+            //UP
+            if ((keyboard.IsKeyDown(Keys.W) || GamePad.GetState(PlayerIndex.One).DPad.Up == ButtonState.Pressed) && !menu_keyup_pressed)
             {
-                songManager.MediaPlayer_VolumePlus(false);
+                menu_keyup_pressed = true;
+                gameMenu.SelectPrevious();
             }
+            if ((keyboard.IsKeyUp(Keys.W) && GamePad.GetState(PlayerIndex.One).DPad.Up == ButtonState.Released)) menu_keyup_pressed = false;
 
-            //MouseLeftClicked = (Mouse.GetState().LeftButton == ButtonState.Pressed) && (_lastMouseState.LeftButton == ButtonState.Released);
-            //MouseRightClicked = (Mouse.GetState().RightButton == ButtonState.Pressed) && (_lastMouseState.RightButton == ButtonState.Released);
-            //_lastMouseState = Mouse.GetState();
+            //DOWN
+            if ((keyboard.IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed) && !menu_keydown_pressed)
+            {
+                menu_keydown_pressed = true;
+                gameMenu.SelectNext();
+            }
+            if ((keyboard.IsKeyUp(Keys.S) && GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Released)) menu_keydown_pressed = false;
+
+            //LEFT
+            if ((keyboard.IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed) /*&& !menu_keyleft_pressed*/)
+            {
+                menu_keyleft_pressed = true;
+                if (gameMenu.GetSelected() == 0)
+                {
+                    songManager.MediaPlayer_VolumePlus(false);
+                    gameMenu.SettingsVolumeBar(songManager.GetVolume());
+                }
+            }
+            //if ((keyboard.IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Released)) menu_keyleft_pressed = false;
+
+            //RIGHT
+            if ((keyboard.IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed) /*&& !menu_keyright_pressed*/)
+            {
+                menu_keyright_pressed = true;
+
+                if (gameMenu.GetSelected() == 0)
+                {
+                    songManager.MediaPlayer_VolumePlus(true);
+                    gameMenu.SettingsVolumeBar(songManager.GetVolume());
+                }
+            }
+            //if ((keyboard.IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Released)) menu_keyright_pressed = false;
+
+            //SELECT
+            if ((keyboard.IsKeyDown(Keys.Enter) || GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Pressed) && !menu_keyselect_pressed)
+            {
+                menu_keyselect_pressed = true;
+                if (gameMenu.GetMenuType() == 0 && gameMenu.GetSelected() == 3)
+                {
+                    exit = true;
+                }
+            }
+            if ((keyboard.IsKeyDown(Keys.Enter) || GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Released)) menu_keyselect_pressed = false;
+
+            //if (keyboard.IsKeyDown(Keys.Up))
+            //{
+            //    songManager.MediaPlayer_VolumePlus(true);
+            //}
+
+            //if (keyboard.IsKeyDown(Keys.Down))
+            //{
+            //    songManager.MediaPlayer_VolumePlus(false);
+            //}
         }
     }
 }

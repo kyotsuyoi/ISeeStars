@@ -1,6 +1,5 @@
 ﻿using ISS;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
 
 public class Game : Microsoft.Xna.Framework.Game
@@ -13,16 +12,15 @@ public class Game : Microsoft.Xna.Framework.Game
     {
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
-        //IsMouseVisible = true;
+        IsMouseVisible = true;
     }
 
     protected override void Initialize()
     {
-        //_graphics.IsFullScreen = true;
-        Globals.ScreenSize = new Vector2(1024, 768);
-
-        _graphics.PreferredBackBufferWidth = (int)Globals.ScreenSize.X;
-        _graphics.PreferredBackBufferHeight = (int)Globals.ScreenSize.Y;
+        _graphics.IsFullScreen = true;
+        //Globals.ScreenSize = new Vector2(1024, 768);
+        //_graphics.PreferredBackBufferWidth = (int)Globals.ScreenSize.X;
+        //_graphics.PreferredBackBufferHeight = (int)Globals.ScreenSize.Y;
         _graphics.ApplyChanges();
 
         Globals.Content = Content;
@@ -40,7 +38,7 @@ public class Game : Microsoft.Xna.Framework.Game
 
     protected override void Update(GameTime gameTime)
     {
-        if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+        if (InputManager.exit/*Keyboard.GetState().IsKeyDown(Keys.Escape)*/)
         {
             Exit();
         }

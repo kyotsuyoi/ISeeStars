@@ -106,15 +106,15 @@ namespace ISS
             {
                 switch (GameObjectInteract.Type)
                 {
-                    case 0:
+                    case EnumGameObjectType.Health:
                         HeathCharge();
                         break;
 
-                    case 1:
+                    case EnumGameObjectType.Oxygen:
                         OxygenCharge();
                         break;
 
-                    case 2:
+                    case EnumGameObjectType.Energy:
                         EnergyCharge();
                         break;
                 }
@@ -277,21 +277,21 @@ namespace ISS
             {
                 switch (GameObjectInteract.Type)
                 {
-                    case 0:
+                    case EnumGameObjectType.Health:
                         if (_health < 100 && GameObjectInteract.ConsumeRefill())
                         {
                             HealthRefill();
                         }
                         break;
 
-                    case 1:
+                    case EnumGameObjectType.Oxygen:
                         if (_oxygen < 100 && GameObjectInteract.ConsumeRefill())
                         {
                             OxygenRefill();
                         }
                         break;
 
-                    case 2:
+                    case EnumGameObjectType.Energy:
                         if (_energy < 100 && GameObjectInteract.ConsumeRefill())
                         {
                             EnergyRefill();

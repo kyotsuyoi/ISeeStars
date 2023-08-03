@@ -10,13 +10,12 @@ namespace ISS
         private InputManager _inputManager = new InputManager();
         public Player player;
         public SongManager songManager;
-        //private TileObject tileObject;
-
         private int _interactObjectsId = -1;
         private readonly List<GameObject> _objects = new List <GameObject>();
 
         //Verify if the player is falling
         private float lastY = 0;
+        public GameMenu gameMenu;
 
         public GameManager(Vector2 playerPosition)
         {
@@ -29,18 +28,29 @@ namespace ISS
             songManager = new SongManager();
 
             player = new Player(playerPosition);
-            GameObject tileObject =  new GameObject(new Vector2(10,  0), 0);
-            GameObject tileObject2 = new GameObject(new Vector2(110, 0), 1);
-            GameObject tileObject3 = new GameObject(new Vector2(210, 0), 2);
+            GameObject gameObject0 = new GameObject(new Vector2(-110, 0), EnumGameObjectType.Default);
+            GameObject gameObject1 =  new GameObject(new Vector2(10,  0), EnumGameObjectType.Health);
+            GameObject gameObject2 = new GameObject(new Vector2(110, 0), EnumGameObjectType.Oxygen);
+            GameObject gameObject3 = new GameObject(new Vector2(210, 0), EnumGameObjectType.Energy);
 
-            _objects.Add(tileObject);
-            _objects.Add(tileObject2);
-            _objects.Add(tileObject3);
+            _objects.Add(gameObject0);
+            _objects.Add(gameObject1);
+            _objects.Add(gameObject2);
+            _objects.Add(gameObject3);
+
+            gameMenu = new GameMenu(0,3,songManager.GetVolume());
         }
 
         public void Update()
         {
-            _inputManager.Update(player, songManager);
+            _inputManager.Update(player, songManager, gameMenu);
+
+            if (gameMenu.IsActive())
+            {
+                gameMenu.Update();
+                return;
+            }
+
             _bgm.Update(_inputManager.BackgroundMovement);
             //tileObject.Update(_im.BackgroundMovement);
             foreach (var object1 in _objects)
@@ -51,6 +61,7 @@ namespace ISS
 
             CheckCollisions();
             CheckCollisions(player);
+
         }
 
         public void Draw()
@@ -92,16 +103,23 @@ namespace ISS
 
             Globals.SpriteBatch.DrawString(font, "interact_key:" + InputManager.interact_key_pressed.ToString(), new Vector2(10, 280), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
             Globals.SpriteBatch.DrawString(font, "interact_key:" + InputManager.interact_key_pressed.ToString(), new Vector2(12, 282), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
-
+            Globals.SpriteBatch.DrawString(font, "menu_key_pressed:" + InputManager.menu_key_pressed.ToString(), new Vector2(10, 300), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "menu_key_pressed:" + InputManager.menu_key_pressed.ToString(), new Vector2(12, 302), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            
+            Globals.SpriteBatch.DrawString(font, "menu_selected:" + InputManager.menu_selected.ToString(), new Vector2(10, 320), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "menu_selected:" + InputManager.menu_selected.ToString(), new Vector2(12, 322), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            
             if (player.Interact)
             {
                 Globals.SpriteBatch.DrawString(font, "Y", new Vector2(
                     _objects[_interactObjectsId].Position.X + _objects[_interactObjectsId].Origin.X-5, 
-                    _objects[_interactObjectsId].Position.Y-10), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+                    _objects[_interactObjectsId].Position.Y-10), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9997f);
                 Globals.SpriteBatch.DrawString(font, "Y", new Vector2(
                     _objects[_interactObjectsId].Position.X + _objects[_interactObjectsId].Origin.X-7, 
-                    _objects[_interactObjectsId].Position.Y-12), Color.Yellow, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+                    _objects[_interactObjectsId].Position.Y-12), Color.Yellow, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9998f);
             }
+
+            if (gameMenu.IsActive()) gameMenu.Draw();
         }
 
         private void CheckCollisions(Player player)

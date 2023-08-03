@@ -93,10 +93,12 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Class\Common\Enums.cs" />
     <Compile Include="Class\Managers\BGManager.cs" />
     <Compile Include="Class\Common\Animation.cs" />
     <Compile Include="Class\GameObject.cs" />
     <Compile Include="Class\Managers\SongManager.cs" />
+    <Compile Include="Class\GameMenu.cs" />
     <Compile Include="Class\ProgressBar.cs" />
     <Compile Include="Class\ProgressBarAnimated.cs" />
     <Compile Include="Game.cs" />

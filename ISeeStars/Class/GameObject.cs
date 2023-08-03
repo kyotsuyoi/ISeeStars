@@ -10,7 +10,7 @@ namespace ISS
         public Vector2 Size;
         public Vector2 Origin { get; }
         private Vector2 lastScreenSize;
-        public int Type;
+        public EnumGameObjectType Type;
         private float _refillValue;
         private int _refill = 4;
         //private int _refillBlink;
@@ -19,7 +19,7 @@ namespace ISS
         private Texture2D rect_green = null;
         private Texture2D rect_bar = null;
 
-        public GameObject(Vector2 position, int type)
+        public GameObject(Vector2 position, EnumGameObjectType type)
         {
             Type = type;
             DefineType();
@@ -79,13 +79,16 @@ namespace ISS
         {
             switch (Type)
             {
-                case 0:
+                case EnumGameObjectType.Default:
+                    texture = Globals.Content.Load<Texture2D>("objectMachineDefault");
+                    break;
+                case EnumGameObjectType.Health:
                     texture = Globals.Content.Load<Texture2D>("objectMachineHealth");
                     break; 
-                case 1:
+                case EnumGameObjectType.Oxygen:
                     texture = Globals.Content.Load<Texture2D>("objectMachineOxygen");
                     break;
-                case 2:
+                case EnumGameObjectType.Energy:
                     texture = Globals.Content.Load<Texture2D>("objectMachineEnergy");
                     break;
             }
@@ -93,7 +96,7 @@ namespace ISS
 
         private void DrawLoadingBar()
         {
-            if (Type == 0 || Type == 1 || Type == 2)
+            if (Type == EnumGameObjectType.Health || Type == EnumGameObjectType.Oxygen || Type == EnumGameObjectType.Energy)
             {
                 //var rect_width = (int)(64 * _refillValue / 100);
                 var rect_width = _refillValue / 100;
@@ -171,7 +174,13 @@ namespace ISS
 
         public void UpdateLoadingBar(bool update_type_0)
         {
-            if (Type == 1)
+
+            if (Type == EnumGameObjectType.Health && update_type_0)
+            {
+                _refillValue += 0.1f;
+            }
+
+            if (Type == EnumGameObjectType.Oxygen)
             {
                 if (Globals.Time < 360f || Globals.Time > 1080f)
                 {
@@ -183,7 +192,7 @@ namespace ISS
                 }
             }
 
-            if (Type == 2)
+            if (Type == EnumGameObjectType.Energy) 
             {
                 if(Globals.Time > 360f && Globals.Time < 1080f)
                 {
@@ -197,11 +206,6 @@ namespace ISS
                 {
                     _refillValue += 0.01f;
                 }
-            }
-
-            if (Type == 0 && update_type_0)
-            {
-                _refillValue += 0.1f;                
             }
 
             if (_refillValue >= 100 && _refill < 4)
