@@ -28,17 +28,17 @@ namespace ISS
             songManager = new SongManager();
 
             player = new Player(playerPosition);
-            GameObject gameObject0 = new GameObject(new Vector2(-110, 0), EnumGameObjectType.Default);
-            GameObject gameObject1 =  new GameObject(new Vector2(10,  0), EnumGameObjectType.Health);
-            GameObject gameObject2 = new GameObject(new Vector2(110, 0), EnumGameObjectType.Oxygen);
-            GameObject gameObject3 = new GameObject(new Vector2(210, 0), EnumGameObjectType.Energy);
+            //GameObject gameObject0 = new GameObject(new Vector2(-110, 0), EnumGameObjectType.Default);
+            GameObject gameObject1 =  new GameObject(new Vector2(10,  0), EnumGameObjectType.Default);
+            GameObject gameObject2 = new GameObject(new Vector2(110, 0), EnumGameObjectType.Default);
+            GameObject gameObject3 = new GameObject(new Vector2(210, 0), EnumGameObjectType.Default);
 
-            _objects.Add(gameObject0);
+            //_objects.Add(gameObject0);
             _objects.Add(gameObject1);
             _objects.Add(gameObject2);
             _objects.Add(gameObject3);
 
-            gameMenu = new GameMenu(0,3,songManager.GetVolume());
+            gameMenu = new GameMenu(EnumGameMenuType.Settings, 3, songManager.GetVolume());
         }
 
         public void Update()
@@ -53,9 +53,9 @@ namespace ISS
 
             _bgm.Update(_inputManager.BackgroundMovement);
             //tileObject.Update(_im.BackgroundMovement);
-            foreach (var object1 in _objects)
+            foreach (var item in _objects)
             {
-                object1.Update(_inputManager.BackgroundMovement);
+                item.Update(_inputManager.BackgroundMovement);
             }
             player.Update();
 
@@ -68,58 +68,13 @@ namespace ISS
         {
             _bgm.Draw();
             //tileObject.Draw();
-            foreach (var object1 in _objects)
+            foreach (var item in _objects)
             {
-                object1.Draw();
+                item.Draw();
             }
-            player.Draw();
-
-            SpriteFont font = Globals.Content.Load<SpriteFont>("fontMedium");
-
-            var hh = (int)Globals.Time / 60;
-            var mm = (int)Globals.Time % 60;
-            var game_time = "Time:" + hh.ToString().PadLeft(2, '0') + ":" + mm.ToString().PadLeft(2, '0');
-            Globals.SpriteBatch.DrawString(font, game_time, new Vector2(10, 120), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
-            Globals.SpriteBatch.DrawString(font, game_time, new Vector2(12, 122), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
-
-            Globals.SpriteBatch.DrawString(font, "Y:" + (int)(player.Position.Y + player.Size.Y), new Vector2(10, 140), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
-            Globals.SpriteBatch.DrawString(font, "Y:" + (int)(player.Position.Y + player.Size.Y), new Vector2(12, 142), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
-
-            //Globals.SpriteBatch.DrawString(font, "Position:" + _bgm.GetLayer3().Layer0PositionX(), new Vector2(10, 100), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
-            //Globals.SpriteBatch.DrawString(font, "Position:" + _bgm.GetLayer3().Layer0PositionX(), new Vector2(12, 102), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
-
-            Globals.SpriteBatch.DrawString(font, "Jump:" + player.Jump, new Vector2(10, 160), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
-            Globals.SpriteBatch.DrawString(font, "Jump:" + player.Jump, new Vector2(12, 162), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
-            Globals.SpriteBatch.DrawString(font, "Fly:" + player.isFly(), new Vector2(10, 180), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1); ;
-            Globals.SpriteBatch.DrawString(font, "Fly:" + player.isFly(), new Vector2(12, 182), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
-            Globals.SpriteBatch.DrawString(font, "Run:" + player.Running, new Vector2(10, 200), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
-            Globals.SpriteBatch.DrawString(font, "Run:" + player.Running, new Vector2(12, 202), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
-            Globals.SpriteBatch.DrawString(font, "Crouch:" + player.Crouch, new Vector2(10, 220), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
-            Globals.SpriteBatch.DrawString(font, "Crouch:" + player.Crouch, new Vector2(12, 222), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
-            Globals.SpriteBatch.DrawString(font, "JumpPower:" + player.JumpPower, new Vector2(10, 240), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
-            Globals.SpriteBatch.DrawString(font, "JumpPower:" + player.JumpPower, new Vector2(12, 242), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
-            Globals.SpriteBatch.DrawString(font, "Ground:" + player.Grounded, new Vector2(10, 260), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
-            Globals.SpriteBatch.DrawString(font, "Ground:" + player.Grounded, new Vector2(12, 262), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
-
-            Globals.SpriteBatch.DrawString(font, "interact_key:" + InputManager.interact_key_pressed.ToString(), new Vector2(10, 280), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
-            Globals.SpriteBatch.DrawString(font, "interact_key:" + InputManager.interact_key_pressed.ToString(), new Vector2(12, 282), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
-            Globals.SpriteBatch.DrawString(font, "menu_key_pressed:" + InputManager.menu_key_pressed.ToString(), new Vector2(10, 300), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
-            Globals.SpriteBatch.DrawString(font, "menu_key_pressed:" + InputManager.menu_key_pressed.ToString(), new Vector2(12, 302), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
-            
-            Globals.SpriteBatch.DrawString(font, "menu_selected:" + InputManager.menu_selected.ToString(), new Vector2(10, 320), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
-            Globals.SpriteBatch.DrawString(font, "menu_selected:" + InputManager.menu_selected.ToString(), new Vector2(12, 322), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
-            
-            if (player.Interact)
-            {
-                Globals.SpriteBatch.DrawString(font, "Y", new Vector2(
-                    _objects[_interactObjectsId].Position.X + _objects[_interactObjectsId].Origin.X-5, 
-                    _objects[_interactObjectsId].Position.Y-10), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9997f);
-                Globals.SpriteBatch.DrawString(font, "Y", new Vector2(
-                    _objects[_interactObjectsId].Position.X + _objects[_interactObjectsId].Origin.X-7, 
-                    _objects[_interactObjectsId].Position.Y-12), Color.Yellow, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9998f);
-            }
-
+            player.Draw();           
             if (gameMenu.IsActive()) gameMenu.Draw();
+            DrawDebugInfo();
         }
 
         private void CheckCollisions(Player player)
@@ -180,6 +135,54 @@ namespace ISS
                 return true;
             }
             return false;
+        }
+
+        private void DrawDebugInfo()
+        {
+            SpriteFont font = Globals.Content.Load<SpriteFont>("fontMedium");
+
+            var hh = (int)Globals.Time / 60;
+            var mm = (int)Globals.Time % 60;
+            var game_time = "Time:" + hh.ToString().PadLeft(2, '0') + ":" + mm.ToString().PadLeft(2, '0');
+            Globals.SpriteBatch.DrawString(font, game_time, new Vector2(10, 120), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, game_time, new Vector2(12, 122), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            Globals.SpriteBatch.DrawString(font, "Y:" + (int)(player.Position.Y + player.Size.Y), new Vector2(10, 140), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "Y:" + (int)(player.Position.Y + player.Size.Y), new Vector2(12, 142), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            //Globals.SpriteBatch.DrawString(font, "Position:" + _bgm.GetLayer3().Layer0PositionX(), new Vector2(10, 100), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            //Globals.SpriteBatch.DrawString(font, "Position:" + _bgm.GetLayer3().Layer0PositionX(), new Vector2(12, 102), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            Globals.SpriteBatch.DrawString(font, "Jump:" + player.Jump, new Vector2(10, 160), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "Jump:" + player.Jump, new Vector2(12, 162), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            Globals.SpriteBatch.DrawString(font, "Fly:" + player.isFly(), new Vector2(10, 180), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1); ;
+            Globals.SpriteBatch.DrawString(font, "Fly:" + player.isFly(), new Vector2(12, 182), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            Globals.SpriteBatch.DrawString(font, "Run:" + player.Running, new Vector2(10, 200), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "Run:" + player.Running, new Vector2(12, 202), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            Globals.SpriteBatch.DrawString(font, "Crouch:" + player.Crouch, new Vector2(10, 220), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "Crouch:" + player.Crouch, new Vector2(12, 222), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            Globals.SpriteBatch.DrawString(font, "JumpPower:" + player.JumpPower, new Vector2(10, 240), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "JumpPower:" + player.JumpPower, new Vector2(12, 242), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            Globals.SpriteBatch.DrawString(font, "Ground:" + player.Grounded, new Vector2(10, 260), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "Ground:" + player.Grounded, new Vector2(12, 262), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            Globals.SpriteBatch.DrawString(font, "interact_key:" + InputManager.interact_key_pressed.ToString(), new Vector2(10, 280), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "interact_key:" + InputManager.interact_key_pressed.ToString(), new Vector2(12, 282), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            Globals.SpriteBatch.DrawString(font, "menu_key_pressed:" + InputManager.menu_key_pressed.ToString(), new Vector2(10, 300), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "menu_key_pressed:" + InputManager.menu_key_pressed.ToString(), new Vector2(12, 302), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            Globals.SpriteBatch.DrawString(font, "menu_selected:" + InputManager.menu_selected.ToString(), new Vector2(10, 320), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "menu_selected:" + InputManager.menu_selected.ToString(), new Vector2(12, 322), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            if (player.Interact)
+            {
+                Globals.SpriteBatch.DrawString(font, "Y", new Vector2(
+                    _objects[_interactObjectsId].Position.X + _objects[_interactObjectsId].Origin.X - 5,
+                    _objects[_interactObjectsId].Position.Y - 10), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9997f);
+                Globals.SpriteBatch.DrawString(font, "Y", new Vector2(
+                    _objects[_interactObjectsId].Position.X + _objects[_interactObjectsId].Origin.X - 7,
+                    _objects[_interactObjectsId].Position.Y - 12), Color.Yellow, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9998f);
+            }
         }
     }
 }

@@ -2,9 +2,22 @@
 {    
     public enum EnumGameObjectType
     {
-        Default = 0,
-        Health = 1,
-        Oxygen = 2,
-        Energy = 3
+        Default,
+        Health,
+        Oxygen,
+        Energy
+    }
+
+    public enum EnumGameMenuType
+    {
+        Main,
+        Settings,
+        MachineDefault
+    }
+
+    public enum EnumInteractionType
+    {
+        None,
+        MachineDefault
     }
 }

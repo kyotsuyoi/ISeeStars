@@ -27,20 +27,22 @@ namespace ISS
 
         public static bool exit = false;
 
+        //private GameMenu gameMenu;
+
         public void Update(Player player, SongManager songManager, GameMenu gameMenu)
         {
             KeyboardState keyboard = Keyboard.GetState();
             BackgroundMovement = 0;
             _direction = Vector2.Zero;
 
-            menu_selected = gameMenu.GetSelected();
-            MenuControl(keyboard, gameMenu, songManager);
+            MenuControl(keyboard, songManager, gameMenu, player);
             if (gameMenu.IsActive()) return;
-            PlayerControl(keyboard, player);
+            PlayerControl(keyboard, player, gameMenu);
         }
 
-        private void PlayerControl(KeyboardState keyboard, Player player)
+        private void PlayerControl(KeyboardState keyboard, Player player, GameMenu gameMenu)
         {
+            //Movement L R
             if ((keyboard.IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed) && !player.Crouch)
             {
                 _direction.X++;
@@ -54,12 +56,14 @@ namespace ISS
                 _side = 'L';
             }
 
+            //Crouch
             player.Crouch = false;
             if (keyboard.IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed && !player.Jump && !player.isFly())
             {
                 player.Crouch = true;
             }
 
+            //Fly
             if ((keyboard.IsKeyDown(Keys.U) || GamePad.GetState(PlayerIndex.One).Triggers.Left > 0) && player.getEnergy() > 0)
             {
                 if(keyboard.IsKeyDown(Keys.U) && GamePad.GetState(PlayerIndex.One).Triggers.Left <= 0){
@@ -75,6 +79,7 @@ namespace ISS
                 player.setFly(0);
             }
 
+            //Run
             player.Running = false;
             if ((keyboard.IsKeyDown(Keys.H) || GamePad.GetState(PlayerIndex.One).Buttons.X == ButtonState.Pressed) && !player.Crouch && player.Oxygen() > 0)
             {
@@ -92,32 +97,40 @@ namespace ISS
                 _BackgroundSpeed = 200f;
             }
 
+            //Jump
             if ((keyboard.IsKeyDown(Keys.Space) || GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Pressed) && !player.Jump && !player.Crouch && player.Grounded)
             {
                 player.Jump = true;
             }
 
+            //Interaction
             if ((keyboard.IsKeyDown(Keys.I) || GamePad.GetState(PlayerIndex.One).Buttons.Y == ButtonState.Pressed) && !interact_key_pressed)
             {
                 interact_key_pressed = true;
-                player.Interaction();
+                if (player.Interaction() == EnumInteractionType.MachineDefault && player.getEnergy() >= 50f)
+                {
+                    gameMenu.Activate(true);
+                    gameMenu.DefineType(EnumGameMenuType.MachineDefault);
+                }
             }
             if (keyboard.IsKeyUp(Keys.I) && GamePad.GetState(PlayerIndex.One).Buttons.Y == ButtonState.Released) interact_key_pressed = false;            
         }
 
-        private void MenuControl(KeyboardState keyboard, GameMenu gameMenu, SongManager songManager)
+        private void MenuControl(KeyboardState keyboard, SongManager songManager, GameMenu gameMenu, Player player)
         {
+
+            menu_selected = gameMenu.GetSelected();
             //MENU
             if ((keyboard.IsKeyDown(Keys.Escape) || GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed) && !menu_key_pressed)
             {
-                if (gameMenu.IsActive())
+                if (gameMenu.IsActive() && gameMenu.GetMenuType() == EnumGameMenuType.Settings)
                 {
                     gameMenu.Activate(false);
-                    gameMenu.SetSelected();
                 }
                 else
-                {
+                {                    
                     gameMenu.Activate(true);
+                    gameMenu.DefineType(EnumGameMenuType.Settings);
                 }
                 menu_key_pressed = true;
             }
@@ -145,7 +158,7 @@ namespace ISS
             if ((keyboard.IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed) /*&& !menu_keyleft_pressed*/)
             {
                 menu_keyleft_pressed = true;
-                if (gameMenu.GetSelected() == 0)
+                if (gameMenu.GetMenuType() == EnumGameMenuType.Settings && gameMenu.GetSelected() == 0)
                 {
                     songManager.MediaPlayer_VolumePlus(false);
                     gameMenu.SettingsVolumeBar(songManager.GetVolume());
@@ -158,7 +171,7 @@ namespace ISS
             {
                 menu_keyright_pressed = true;
 
-                if (gameMenu.GetSelected() == 0)
+                if (gameMenu.GetMenuType() == EnumGameMenuType.Settings && gameMenu.GetSelected() == 0)
                 {
                     songManager.MediaPlayer_VolumePlus(true);
                     gameMenu.SettingsVolumeBar(songManager.GetVolume());
@@ -170,22 +183,32 @@ namespace ISS
             if ((keyboard.IsKeyDown(Keys.Enter) || GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Pressed) && !menu_keyselect_pressed)
             {
                 menu_keyselect_pressed = true;
-                if (gameMenu.GetMenuType() == 0 && gameMenu.GetSelected() == 3)
+                if (gameMenu.GetMenuType() == EnumGameMenuType.Settings && gameMenu.GetSelected() == 3)
                 {
                     exit = true;
                 }
+
+                if (gameMenu.GetMenuType() == EnumGameMenuType.MachineDefault)
+                {
+                    switch (gameMenu.GetSelected())
+                    {
+                        case 0:
+                            player.GameObjectInteract.DefineType(EnumGameObjectType.Health);
+                            break;
+                        case 1:
+                            player.GameObjectInteract.DefineType(EnumGameObjectType.Oxygen);
+                            break;
+                        case 2:
+                            player.GameObjectInteract.DefineType(EnumGameObjectType.Energy);
+                            break;
+                        case 3:
+                            break;
+                    }
+                    player.setEnergy(50);
+                    gameMenu.Activate(false);
+                }
             }
             if ((keyboard.IsKeyDown(Keys.Enter) || GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Released)) menu_keyselect_pressed = false;
-
-            //if (keyboard.IsKeyDown(Keys.Up))
-            //{
-            //    songManager.MediaPlayer_VolumePlus(true);
-            //}
-
-            //if (keyboard.IsKeyDown(Keys.Down))
-            //{
-            //    songManager.MediaPlayer_VolumePlus(false);
-            //}
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace ISS
 {
@@ -31,6 +32,7 @@ namespace ISS
         private float _energy;
 
         private int energyCooldown = 0;
+        private int fallingDown = 0;
 
         //private readonly ProgressBar _healthBar;
         private readonly ProgressBarAnimated _healthBarAnimated;
@@ -90,21 +92,15 @@ namespace ISS
                 _anims.Update(InputManager.Direction, false, true);
             }
 
-            if (Running)
-            {
-                OxygenLost();
-            }
+            if (Running) OxygenLost();
 
             JumpResolve();
 
-            if (Crouch)
-            {
-                _anims.Update(new Vector2(0, 1), false, false);
-            }
+            if (Crouch)_anims.Update(new Vector2(0, 1), false, false);            
 
             if (Interact)
             {
-                switch (GameObjectInteract.Type)
+                switch (GameObjectInteract.GetObjectType())
                 {
                     case EnumGameObjectType.Health:
                         HeathCharge();
@@ -221,6 +217,12 @@ namespace ISS
             return _energy;
         }
 
+        public void setEnergy(float value)
+        {
+            _energy -= value;
+            if(_energy<0) _energy = 0;
+        }
+
         private void JumpResolve()
         {
             if (Jump && JumpPower <= 0)
@@ -260,23 +262,34 @@ namespace ISS
 
             if (fly)
             {
-                if (Grounded)
-                {
-                    //JumpPower += 600;
-                }
+                //if (Grounded)JumpPower += 600;                
                 Position += Vector2.Normalize(new Vector2(0, -1)) * JumpPower * Globals.ElapsedSeconds;
                 Grounded = false;
                 Jump = false;
                 EnergyLost(JumpPower * 0.02f);
             }
+
+            if (!Grounded && JumpPower <= 0)
+            {
+                fallingDown++;
+            }
+
+            if(Grounded && fallingDown > 0)
+            {
+                TakeDamage(fallingDown);
+                fallingDown = 0;
+            }
         }
 
-        public void Interaction()
+        public EnumInteractionType Interaction()
         {
             if (Interact)
             {
-                switch (GameObjectInteract.Type)
+                switch (GameObjectInteract.GetObjectType())
                 {
+                    case EnumGameObjectType.Default:
+                        return EnumInteractionType.MachineDefault;
+
                     case EnumGameObjectType.Health:
                         if (_health < 100 && GameObjectInteract.ConsumeRefill())
                         {
@@ -299,6 +312,7 @@ namespace ISS
                         break;
                 }
             }
+            return EnumInteractionType.None;
         }
 
         public float Oxygen()

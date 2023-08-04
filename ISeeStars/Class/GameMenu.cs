@@ -7,7 +7,7 @@ namespace ISS
     public class GameMenu
     {
         private Texture2D texture; 
-        private readonly int type;
+        private EnumGameMenuType type;
         private bool active = false;
         private int selectedSize;
         private int selected;
@@ -16,11 +16,11 @@ namespace ISS
         private Texture2D rect_select;
         private Texture2D rect_bar;
 
-        public GameMenu(int Type, int SelectedSize, float VolumeBarValue) 
+        public GameMenu(EnumGameMenuType Type, int SelectedSize, float VolumeBarValue) 
         {
             type = Type;
             selectedSize = SelectedSize;
-            DefineType();
+            DefineType(Type);
 
             volumeBarValue = VolumeBarValue;
 
@@ -56,33 +56,43 @@ namespace ISS
             var rect_pos_bar = new Vector2(position.X + 50, position.Y + 80 + selectedPosition);
             Globals.SpriteBatch.Draw(rect_select, rect_pos_bar, null, rect_color, 0, Vector2.Zero, new Vector2(1, 1), SpriteEffects.None, 1f);
 
-            //var rect_width = volumeBarValue / 100;
-            if (volumeBarValue > 0)
-            {
-                rect_color = Color.Green;
-                if (volumeBarValue > 0.5f) rect_color = Color.Yellow;
-                if (volumeBarValue > 0.7f) rect_color = Color.Orange;
-                if (volumeBarValue > 0.9f) rect_color = Color.Red;
-
-                rect_pos_bar = new Vector2(position.X + 156, position.Y + 85);
-                Globals.SpriteBatch.Draw(rect_bar, rect_pos_bar, null, rect_color, 0, Vector2.Zero, new Vector2(volumeBarValue, 1), SpriteEffects.None, 1f);
-            }
-        }
-
-        private void DefineType()
-        {
             switch (type)
             {
-                case 0:
-                    texture = Globals.Content.Load<Texture2D>("menuConfig");
+                case EnumGameMenuType.Settings:
+                    //var rect_width = volumeBarValue / 100;
+                    if (volumeBarValue > 0)
+                    {
+                        rect_color = Color.Green;
+                        if (volumeBarValue > 0.5f) rect_color = Color.Yellow;
+                        if (volumeBarValue > 0.7f) rect_color = Color.Orange;
+                        if (volumeBarValue > 0.9f) rect_color = Color.Red;
+
+                        rect_pos_bar = new Vector2(position.X + 156, position.Y + 85);
+                        Globals.SpriteBatch.Draw(rect_bar, rect_pos_bar, null, rect_color, 0, Vector2.Zero, new Vector2(volumeBarValue, 1), SpriteEffects.None, 1f);
+                    }
                     break;
-                case 1:
-                    texture = Globals.Content.Load<Texture2D>("menuMachineChange");
+
+                case EnumGameMenuType.MachineDefault:
+
+                    break;
+            }            
+        }
+
+        public void DefineType(EnumGameMenuType Type)
+        {
+            type = Type;
+            switch (Type)
+            {
+                case EnumGameMenuType.Settings:
+                    texture = Globals.Content.Load<Texture2D>("menuSettings");
+                    break;
+                case EnumGameMenuType.MachineDefault:
+                    texture = Globals.Content.Load<Texture2D>("menuMachineDefault");
                     break;
             }
         }
 
-        public int GetMenuType()
+        public EnumGameMenuType GetMenuType()
         {
             return type;
         }
@@ -95,6 +105,10 @@ namespace ISS
         public void Activate(bool activate)
         {
             active = activate;
+            if (!activate)
+            {
+                selected = 0;
+            }
         }
 
         public void SelectNext()
@@ -112,11 +126,6 @@ namespace ISS
         public int GetSelected()
         {
             return selected;
-        }
-
-        public void SetSelected()
-        {
-            selected = 0;
         }
 
         public void SettingsVolumeBar(float Value)

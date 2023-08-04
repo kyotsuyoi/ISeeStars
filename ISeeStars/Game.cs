@@ -17,10 +17,10 @@ public class Game : Microsoft.Xna.Framework.Game
 
     protected override void Initialize()
     {
-        _graphics.IsFullScreen = true;
-        //Globals.ScreenSize = new Vector2(1024, 768);
-        //_graphics.PreferredBackBufferWidth = (int)Globals.ScreenSize.X;
-        //_graphics.PreferredBackBufferHeight = (int)Globals.ScreenSize.Y;
+        //_graphics.IsFullScreen = true;
+        Globals.ScreenSize = new Vector2(1024, 768);
+        _graphics.PreferredBackBufferWidth = (int)Globals.ScreenSize.X;
+        _graphics.PreferredBackBufferHeight = (int)Globals.ScreenSize.Y;
         _graphics.ApplyChanges();
 
         Globals.Content = Content;
