@@ -11,18 +11,20 @@ namespace ISS
         private bool active = false;
         private int selectedSize;
         private int selected;
-        private float volumeBarValue;
+        private float soundVolume;
+        private float fXVolume;
 
         private Texture2D rect_select;
         private Texture2D rect_bar;
 
-        public GameMenu(EnumGameMenuType Type, int SelectedSize, float VolumeBarValue) 
+        public GameMenu(EnumGameMenuType Type, int SelectedSize, float SoundVolume = 1f, float FXVolume = 1f) 
         {
             type = Type;
             selectedSize = SelectedSize;
             DefineType(Type);
 
-            volumeBarValue = VolumeBarValue;
+            soundVolume = SoundVolume;
+            fXVolume = FXVolume;
 
             var rect_bar_size = new Vector2(20, 20);
             rect_select = new Texture2D(Globals.SpriteBatch.GraphicsDevice, (int)rect_bar_size.X, (int)rect_bar_size.Y);
@@ -60,15 +62,26 @@ namespace ISS
             {
                 case EnumGameMenuType.Settings:
                     //var rect_width = volumeBarValue / 100;
-                    if (volumeBarValue > 0)
+                    if (soundVolume > 0)
                     {
                         rect_color = Color.Green;
-                        if (volumeBarValue > 0.5f) rect_color = Color.Yellow;
-                        if (volumeBarValue > 0.7f) rect_color = Color.Orange;
-                        if (volumeBarValue > 0.9f) rect_color = Color.Red;
+                        if (soundVolume > 0.5f) rect_color = Color.Yellow;
+                        if (soundVolume > 0.7f) rect_color = Color.Orange;
+                        if (soundVolume > 0.9f) rect_color = Color.Red;
 
                         rect_pos_bar = new Vector2(position.X + 156, position.Y + 85);
-                        Globals.SpriteBatch.Draw(rect_bar, rect_pos_bar, null, rect_color, 0, Vector2.Zero, new Vector2(volumeBarValue, 1), SpriteEffects.None, 1f);
+                        Globals.SpriteBatch.Draw(rect_bar, rect_pos_bar, null, rect_color, 0, Vector2.Zero, new Vector2(soundVolume, 1), SpriteEffects.None, 1f);
+                    }
+
+                    if (fXVolume > 0)
+                    {
+                        rect_color = Color.Green;
+                        if (fXVolume > 0.5f) rect_color = Color.Yellow;
+                        if (fXVolume > 0.7f) rect_color = Color.Orange;
+                        if (fXVolume > 0.9f) rect_color = Color.Red;
+
+                        rect_pos_bar = new Vector2(position.X + 156, position.Y + 85+75);
+                        Globals.SpriteBatch.Draw(rect_bar, rect_pos_bar, null, rect_color, 0, Vector2.Zero, new Vector2(fXVolume, 1), SpriteEffects.None, 1f);
                     }
                     break;
 
@@ -128,9 +141,14 @@ namespace ISS
             return selected;
         }
 
-        public void SettingsVolumeBar(float Value)
+        public void SettingsSoundVolume(float Value)
         {
-            volumeBarValue = Value;
+            soundVolume = Value;
+        }
+
+        public void SettingsFXVolume(float Value)
+        {
+            fXVolume = Value;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Collections.Generic;
 
 namespace ISS
 {
@@ -40,6 +41,7 @@ namespace ISS
         private readonly ProgressBarAnimated _energyBarAnimated;
 
         private readonly AnimationManager _anims = new AnimationManager();
+        private List<EnumSoundFX> soundFXes = new List<EnumSoundFX>();
 
         public Player(Vector2 position, float health = 100f, float oxigen = 100f, float energy = 100f)
         {
@@ -140,6 +142,14 @@ namespace ISS
         {
             _health -= damage;
             if (_health < 0) _health = 0;
+            if(damage > 20)
+            {
+                soundFXes.Add(EnumSoundFX.PlayerTakeDamage2);
+            }
+            else
+            {
+                soundFXes.Add(EnumSoundFX.PlayerTakeDamage1);
+            }
         }
 
         public void Heal(float heal)
@@ -258,6 +268,7 @@ namespace ISS
                 Jump = false;
                 fly = false;
                 Grounded = true;
+                soundFXes.Add(EnumSoundFX.TouchingGround);
             }
 
             if (fly)
@@ -337,6 +348,14 @@ namespace ISS
         public bool isFly()
         {
             return fly;
+        }
+
+        public EnumSoundFX GetSoundFX()
+        {
+            if (soundFXes.Count == 0) return EnumSoundFX.None;
+            var soundFX = soundFXes[0];
+            soundFXes.Remove(soundFX);
+            return soundFX;
         }
     }
 }

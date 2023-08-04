@@ -9,7 +9,7 @@ namespace ISS
         private readonly BGManager _bgm = new BGManager();
         private InputManager _inputManager = new InputManager();
         public Player player;
-        public SongManager songManager;
+        public SoundManager soundManager;
         private int _interactObjectsId = -1;
         private readonly List<GameObject> _objects = new List <GameObject>();
 
@@ -25,7 +25,7 @@ namespace ISS
             _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL3"), 0.3f, 1.0f, false));
             //_bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL4"), 0.4f, 0.2f, -100.0f));
 
-            songManager = new SongManager();
+            soundManager = new SoundManager();
 
             player = new Player(playerPosition);
             //GameObject gameObject0 = new GameObject(new Vector2(-110, 0), EnumGameObjectType.Default);
@@ -38,13 +38,15 @@ namespace ISS
             _objects.Add(gameObject2);
             _objects.Add(gameObject3);
 
-            gameMenu = new GameMenu(EnumGameMenuType.Settings, 3, songManager.GetVolume());
+            gameMenu = new GameMenu(EnumGameMenuType.Settings, 3, soundManager.GetBGMVolume());
         }
 
         public void Update()
         {
-            _inputManager.Update(player, songManager, gameMenu);
+            _inputManager.Update(player, soundManager, gameMenu);
 
+            soundManager.PlayFX(player.GetSoundFX());
+            soundManager.PlayFX(_inputManager.GetSoundFX());
             if (gameMenu.IsActive())
             {
                 gameMenu.Update();
@@ -139,6 +141,7 @@ namespace ISS
 
         private void DrawDebugInfo()
         {
+#if DEBUG
             SpriteFont font = Globals.Content.Load<SpriteFont>("fontMedium");
 
             var hh = (int)Globals.Time / 60;
@@ -183,6 +186,7 @@ namespace ISS
                     _objects[_interactObjectsId].Position.X + _objects[_interactObjectsId].Origin.X - 7,
                     _objects[_interactObjectsId].Position.Y - 12), Color.Yellow, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9998f);
             }
+#endif
         }
     }
 }

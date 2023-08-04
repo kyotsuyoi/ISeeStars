@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using System.Collections.Generic;
 using Windows.Devices.Input.Preview;
 
 namespace ISS
@@ -24,19 +25,22 @@ namespace ISS
         public static bool menu_keyright_pressed = false;
 
         public static int menu_selected;
-
         public static bool exit = false;
+
+        private List<EnumSoundFX> soundFXes = new List<EnumSoundFX>();
+
+        public static bool jump_key_pressed = false;
 
         //private GameMenu gameMenu;
 
-        public void Update(Player player, SongManager songManager, GameMenu gameMenu)
+        public void Update(Player player, SoundManager songManager, GameMenu gameMenu)
         {
             KeyboardState keyboard = Keyboard.GetState();
             BackgroundMovement = 0;
             _direction = Vector2.Zero;
 
             MenuControl(keyboard, songManager, gameMenu, player);
-            if (gameMenu.IsActive()) return;
+            if (gameMenu.IsActive())return;
             PlayerControl(keyboard, player, gameMenu);
         }
 
@@ -98,10 +102,13 @@ namespace ISS
             }
 
             //Jump
-            if ((keyboard.IsKeyDown(Keys.Space) || GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Pressed) && !player.Jump && !player.Crouch && player.Grounded)
+            if ((keyboard.IsKeyDown(Keys.Space) || GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Pressed) && !player.Jump && !player.Crouch && player.Grounded && !jump_key_pressed)
             {
                 player.Jump = true;
+                jump_key_pressed = true;
+                //soundFXes.Add(EnumSoundFX.PlayerJump2);
             }
+            if (keyboard.IsKeyUp(Keys.Space) && GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Released) jump_key_pressed = false;
 
             //Interaction
             if ((keyboard.IsKeyDown(Keys.I) || GamePad.GetState(PlayerIndex.One).Buttons.Y == ButtonState.Pressed) && !interact_key_pressed)
@@ -109,14 +116,16 @@ namespace ISS
                 interact_key_pressed = true;
                 if (player.Interaction() == EnumInteractionType.MachineDefault && player.getEnergy() >= 50f)
                 {
+                    soundFXes.Add(EnumSoundFX.MenuOpen);
                     gameMenu.Activate(true);
                     gameMenu.DefineType(EnumGameMenuType.MachineDefault);
                 }
+                if(player.getEnergy() < 50f) soundFXes.Add(EnumSoundFX.MenuNotOpen);
             }
             if (keyboard.IsKeyUp(Keys.I) && GamePad.GetState(PlayerIndex.One).Buttons.Y == ButtonState.Released) interact_key_pressed = false;            
         }
 
-        private void MenuControl(KeyboardState keyboard, SongManager songManager, GameMenu gameMenu, Player player)
+        private void MenuControl(KeyboardState keyboard, SoundManager songManager, GameMenu gameMenu, Player player)
         {
 
             menu_selected = gameMenu.GetSelected();
@@ -128,7 +137,8 @@ namespace ISS
                     gameMenu.Activate(false);
                 }
                 else
-                {                    
+                {
+                    soundFXes.Add(EnumSoundFX.MenuOpen);
                     gameMenu.Activate(true);
                     gameMenu.DefineType(EnumGameMenuType.Settings);
                 }
@@ -141,6 +151,7 @@ namespace ISS
             //UP
             if ((keyboard.IsKeyDown(Keys.W) || GamePad.GetState(PlayerIndex.One).DPad.Up == ButtonState.Pressed) && !menu_keyup_pressed)
             {
+                soundFXes.Add(EnumSoundFX.MenuNavigation);
                 menu_keyup_pressed = true;
                 gameMenu.SelectPrevious();
             }
@@ -149,6 +160,7 @@ namespace ISS
             //DOWN
             if ((keyboard.IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed) && !menu_keydown_pressed)
             {
+                soundFXes.Add(EnumSoundFX.MenuNavigation);
                 menu_keydown_pressed = true;
                 gameMenu.SelectNext();
             }
@@ -158,10 +170,18 @@ namespace ISS
             if ((keyboard.IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed) /*&& !menu_keyleft_pressed*/)
             {
                 menu_keyleft_pressed = true;
-                if (gameMenu.GetMenuType() == EnumGameMenuType.Settings && gameMenu.GetSelected() == 0)
+                if (gameMenu.GetMenuType() == EnumGameMenuType.Settings)
                 {
-                    songManager.MediaPlayer_VolumePlus(false);
-                    gameMenu.SettingsVolumeBar(songManager.GetVolume());
+                    if(gameMenu.GetSelected() == 0)
+                    {
+                        songManager.SetBGMVolumePlus(false);
+                        gameMenu.SettingsSoundVolume(songManager.GetBGMVolume());
+                    }
+                    if (gameMenu.GetSelected() == 1)
+                    {
+                        songManager.SetFXVolume(false);
+                        gameMenu.SettingsFXVolume(songManager.GetFXVolume());
+                    }
                 }
             }
             //if ((keyboard.IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Released)) menu_keyleft_pressed = false;
@@ -171,10 +191,18 @@ namespace ISS
             {
                 menu_keyright_pressed = true;
 
-                if (gameMenu.GetMenuType() == EnumGameMenuType.Settings && gameMenu.GetSelected() == 0)
+                if (gameMenu.GetMenuType() == EnumGameMenuType.Settings)
                 {
-                    songManager.MediaPlayer_VolumePlus(true);
-                    gameMenu.SettingsVolumeBar(songManager.GetVolume());
+                    if (gameMenu.GetSelected() == 0)
+                    {
+                        songManager.SetBGMVolumePlus(true);
+                        gameMenu.SettingsSoundVolume(songManager.GetBGMVolume());
+                    }
+                    if (gameMenu.GetSelected() == 1)
+                    {
+                        songManager.SetFXVolume(true);
+                        gameMenu.SettingsFXVolume(songManager.GetFXVolume());
+                    }
                 }
             }
             //if ((keyboard.IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Released)) menu_keyright_pressed = false;
@@ -183,6 +211,7 @@ namespace ISS
             if ((keyboard.IsKeyDown(Keys.Enter) || GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Pressed) && !menu_keyselect_pressed)
             {
                 menu_keyselect_pressed = true;
+                soundFXes.Add(EnumSoundFX.MenuSelected);
                 if (gameMenu.GetMenuType() == EnumGameMenuType.Settings && gameMenu.GetSelected() == 3)
                 {
                     exit = true;
@@ -194,21 +223,32 @@ namespace ISS
                     {
                         case 0:
                             player.GameObjectInteract.DefineType(EnumGameObjectType.Health);
+                            player.setEnergy(50);
                             break;
                         case 1:
                             player.GameObjectInteract.DefineType(EnumGameObjectType.Oxygen);
+                            player.setEnergy(50);
                             break;
                         case 2:
                             player.GameObjectInteract.DefineType(EnumGameObjectType.Energy);
+                            player.setEnergy(50);
                             break;
                         case 3:
                             break;
                     }
-                    player.setEnergy(50);
                     gameMenu.Activate(false);
+                    jump_key_pressed = true;
                 }
             }
             if ((keyboard.IsKeyDown(Keys.Enter) || GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Released)) menu_keyselect_pressed = false;
+        }
+
+        public EnumSoundFX GetSoundFX()
+        {
+            if (soundFXes.Count == 0) return EnumSoundFX.None;
+            var soundFX = soundFXes[0];
+            soundFXes.Remove(soundFX);
+            return soundFX;
         }
     }
 }
