@@ -97,10 +97,10 @@ namespace ISS
             switch (Type)
             {
                 case EnumGameMenuType.Settings:
-                    texture = Globals.Content.Load<Texture2D>("menuSettings");
+                    texture = Globals.Content.Load<Texture2D>("Menu/Settings");
                     break;
                 case EnumGameMenuType.MachineDefault:
-                    texture = Globals.Content.Load<Texture2D>("menuMachineDefault");
+                    texture = Globals.Content.Load<Texture2D>("Menu/MachineDefault");
                     break;
             }
         }

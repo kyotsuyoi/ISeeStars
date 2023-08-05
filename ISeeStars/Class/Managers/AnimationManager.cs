@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
+using Windows.UI.Xaml.Controls;
 
 namespace ISS
 {
@@ -14,12 +15,12 @@ namespace ISS
             _lastKey = key;
         }
 
-        public void Update(object key, bool fastAnimation, bool animate)
+        public void Update(object key, bool fastAnimation, int specificFrame = -1)
         {
             if (_anims.TryGetValue(key, out Animation value))
             {
                 value.Start();
-                _anims[key].Update(fastAnimation, animate);
+                _anims[key].Update(fastAnimation, specificFrame);
                 _lastKey = key;
             }
         }
@@ -27,6 +28,11 @@ namespace ISS
         public void Draw(Vector2 position)
         {
             _anims[_lastKey].Draw(position);
+        }
+
+        public Rectangle instantRect()
+        {
+            return _anims[_lastKey].instantRect();
         }
     }
 

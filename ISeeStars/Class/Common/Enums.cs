@@ -1,11 +1,13 @@
 ﻿namespace ISS
-{    
+{
     public enum EnumGameObjectType
     {
         Default,
         Health,
         Oxygen,
-        Energy
+        Energy,
+        WoodenBox,
+        MetalWall
     }
 
     public enum EnumGameMenuType
@@ -21,19 +23,28 @@
         MachineDefault
     }
 
-    public enum EnumSoundFX: int
+    public enum EnumSoundFX : int
     {
         None = 0,
         PlayerTakeDamage1 = 1,
         PlayerTakeDamage2 = 2,
         PlayerDead = 3,
-        PlayerJump1 = 4,
-        PlayerJump2 = 5,
-        MenuNavigation = 6,
-        MenuSelected = 7,
-        MenuOpen = 8,
-        MenuNotOpen = 9,
-        TouchingGround = 10
+        Jump = 4,
+        MenuNavigation = 5,
+        MenuSelected = 6,
+        MenuOpen = 7,
+        MenuNotOpen = 8,
+        MenuClose = 9,
+        TouchingGround = 10,
+        JetPack = 11,
+        Hit = 12,
+        PlayerSuffocating = 13
+    }
+
+    public enum EnumSoundOrigin
+    {
+        None,
+        Player
     }
 }
  

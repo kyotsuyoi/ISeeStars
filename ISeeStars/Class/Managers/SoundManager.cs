@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Audio;
+﻿using ISS;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
 using System.Collections.Generic;
 
@@ -9,10 +10,11 @@ namespace ISS
         private Song BGMusic;
 
         private List<SoundEffect> soundEffects;
+        private List<SoundEffectI> soundEffectInstances = new();
 
-        public SoundManager() 
+        public SoundManager()
         {
-            BGMusic = Globals.Content.Load<Song>("BGM01");
+            BGMusic = Globals.Content.Load<Song>("BGM/BGM01");
             MediaPlayer.Volume = 1f;
 
             MediaPlayer.IsRepeating = true;
@@ -21,22 +23,20 @@ namespace ISS
             SoundEffect.MasterVolume = 1f;
             soundEffects = new List<SoundEffect>
             {
-                Globals.Content.Load<SoundEffect>("SoundFX_PlayerTakeDamage01"),
-                Globals.Content.Load<SoundEffect>("SoundFX_PlayerTakeDamage02"),
-                Globals.Content.Load<SoundEffect>("SoundFX_PlayerDead"),
-                Globals.Content.Load<SoundEffect>("SoundFX_PlayerJump01"),
-                Globals.Content.Load<SoundEffect>("SoundFX_PlayerJump02"),
-                Globals.Content.Load<SoundEffect>("SoundFX_MenuNavigation"),
-                Globals.Content.Load<SoundEffect>("SoundFX_MenuSelected"),
-                Globals.Content.Load<SoundEffect>("SoundFX_MenuOpen"),
-                Globals.Content.Load<SoundEffect>("SoundFX_MenuNotOpen"),
-                Globals.Content.Load<SoundEffect>("SoundFX_TouchingGround")
+                Globals.Content.Load<SoundEffect>("SoundFX/PlayerTakeDamage01"),
+                Globals.Content.Load<SoundEffect>("SoundFX/PlayerTakeDamage02"),
+                Globals.Content.Load<SoundEffect>("SoundFX/PlayerDead"),
+                Globals.Content.Load<SoundEffect>("SoundFX/Jump"),
+                Globals.Content.Load<SoundEffect>("SoundFX/MenuNavigation1"),
+                Globals.Content.Load<SoundEffect>("SoundFX/MenuSelected"),
+                Globals.Content.Load<SoundEffect>("SoundFX/MenuOpen"),
+                Globals.Content.Load<SoundEffect>("SoundFX/MenuNotOpen"),
+                Globals.Content.Load<SoundEffect>("SoundFX/MenuClose"),
+                Globals.Content.Load<SoundEffect>("SoundFX/TouchingGround"),
+                Globals.Content.Load<SoundEffect>("SoundFX/JetPack"),
+                Globals.Content.Load<SoundEffect>("SoundFX/Hit"),
+                Globals.Content.Load<SoundEffect>("SoundFX/PlayerSuffocating")
             };
-
-            //soundEffects[0].Play();
-            //var instance = soundEffects[0].CreateInstance();
-            //instance.IsLooped = true;
-            //instance.Play();
         }
 
         public void SetBGMVolumePlus(bool plus)
@@ -54,7 +54,7 @@ namespace ISS
 
         public float GetBGMVolume() { return MediaPlayer.Volume; }
 
-        public void SetFXVolume(bool plus) 
+        public void SetFXVolume(bool plus)
         {
             if (plus)
             {
@@ -68,11 +68,38 @@ namespace ISS
             }
         }
 
-        public float GetFXVolume() {  return SoundEffect.MasterVolume; }
+        public float GetFXVolume() { return SoundEffect.MasterVolume; }
 
-        public void PlayFX(EnumSoundFX soundFX) {
+        public void PlayFX(EnumSoundFX soundFX)
+        {
             if (soundFX == EnumSoundFX.None) return;
-            soundEffects[(int)soundFX-1].Play(); 
+            soundEffects[(int)soundFX - 1].Play();
+        }
+
+        public void PlayFXInstance(EnumSoundFX soundFX, EnumSoundOrigin enumSoundOrigin)
+        {
+            if(soundFX == EnumSoundFX.None || enumSoundOrigin == EnumSoundOrigin.None) return; 
+            SoundEffectInstance instance = soundEffects[(int)soundFX - 1].CreateInstance();
+            instance.IsLooped = true;
+            SoundEffectI soundEffectI = new SoundEffectI(enumSoundOrigin, soundFX, instance);
+            if (!soundEffectInstances.Contains(soundEffectI))
+            {
+                soundEffectInstances.Add(soundEffectI);
+                SoundEffectI sound = soundEffectInstances.Find(item => item.EnumSoundOrigin == enumSoundOrigin && item.EnumSoundFX == soundFX);
+                sound.SoundEffectInstance.Play();
+            }
+        }
+
+        public void StopFXInstance(EnumSoundFX soundFX, EnumSoundOrigin enumSoundOrigin)
+        {
+            if (soundFX == EnumSoundFX.None || enumSoundOrigin == EnumSoundOrigin.None) return;
+            SoundEffectI sound = soundEffectInstances.Find(item => item.EnumSoundOrigin == enumSoundOrigin && item.EnumSoundFX == soundFX);
+            if (sound != null)
+            {
+                sound.SoundEffectInstance.Stop();
+            }
         }
     }
 }
+
+

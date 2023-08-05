@@ -28,8 +28,11 @@ namespace ISS
         public static bool exit = false;
 
         private List<EnumSoundFX> soundFXes = new List<EnumSoundFX>();
+        private List<EnumSoundFX> soundFXesI = new List<EnumSoundFX>();
+        private List<EnumSoundFX> soundFXesIStop = new List<EnumSoundFX>();
 
         public static bool jump_key_pressed = false;
+        public static bool fly_key_pressed = false;
 
         //private GameMenu gameMenu;
 
@@ -46,6 +49,13 @@ namespace ISS
 
         private void PlayerControl(KeyboardState keyboard, Player player, GameMenu gameMenu)
         {
+            if (!player.IsAlive())
+            {
+                fly_key_pressed = false;
+                if (soundFXesIStop.Contains(EnumSoundFX.JetPack)) return;
+                soundFXesIStop.Add(EnumSoundFX.JetPack);
+                return;
+            }
             //Movement L R
             if ((keyboard.IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed) && !player.Crouch)
             {
@@ -62,36 +72,48 @@ namespace ISS
 
             //Crouch
             player.Crouch = false;
-            if (keyboard.IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed && !player.Jump && !player.isFly())
+            if ((keyboard.IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed) && !player.Jump && !player.IsFlying())
             {
                 player.Crouch = true;
             }
 
             //Fly
-            if ((keyboard.IsKeyDown(Keys.U) || GamePad.GetState(PlayerIndex.One).Triggers.Left > 0) && player.getEnergy() > 0)
+            if ((keyboard.IsKeyDown(Keys.U) || GamePad.GetState(PlayerIndex.One).Triggers.Left > 0.7f) && player.getEnergy() > 0)
             {
                 if(keyboard.IsKeyDown(Keys.U) && GamePad.GetState(PlayerIndex.One).Triggers.Left <= 0){
-                    player.setFly(1);
+                    player.SetFly(1);
                 }
                 else
                 {
-                    player.setFly(GamePad.GetState(PlayerIndex.One).Triggers.Left);
+                    player.SetFly(GamePad.GetState(PlayerIndex.One).Triggers.Left);
                 }
             }
             else
             {
-                player.setFly(0);
+                player.SetFly(0);
+            }
+
+            if ((keyboard.IsKeyDown(Keys.U) || GamePad.GetState(PlayerIndex.One).Triggers.Left > 0.7f) && player.getEnergy() > 0 && !fly_key_pressed)
+            {
+                fly_key_pressed = true;
+                soundFXesI.Add(EnumSoundFX.JetPack);
+            }
+            if (keyboard.IsKeyUp(Keys.U) && GamePad.GetState(PlayerIndex.One).Triggers.Left <= 0)
+            {
+                fly_key_pressed = false;
+                if (soundFXesIStop.Contains(EnumSoundFX.JetPack)) return;
+                soundFXesIStop.Add(EnumSoundFX.JetPack);
             }
 
             //Run
             player.Running = false;
-            if ((keyboard.IsKeyDown(Keys.H) || GamePad.GetState(PlayerIndex.One).Buttons.X == ButtonState.Pressed) && !player.Crouch && player.Oxygen() > 0)
+            if ((keyboard.IsKeyDown(Keys.H) || GamePad.GetState(PlayerIndex.One).Buttons.X == ButtonState.Pressed) && !player.Crouch && player.GetOxygen() > 0)
             {
                 player.Running = true;
             }
 
             _BackgroundSpeed = 100f;
-            if (player.isFly())
+            if (player.IsFlying())
             {
                 _BackgroundSpeed = 300f;
             }
@@ -135,6 +157,7 @@ namespace ISS
                 if (gameMenu.IsActive() && gameMenu.GetMenuType() == EnumGameMenuType.Settings)
                 {
                     gameMenu.Activate(false);
+                    soundFXes.Add(EnumSoundFX.MenuClose);
                 }
                 else
                 {
@@ -170,6 +193,7 @@ namespace ISS
             if ((keyboard.IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed) /*&& !menu_keyleft_pressed*/)
             {
                 menu_keyleft_pressed = true;
+                soundFXes.Add(EnumSoundFX.MenuNavigation);
                 if (gameMenu.GetMenuType() == EnumGameMenuType.Settings)
                 {
                     if(gameMenu.GetSelected() == 0)
@@ -190,7 +214,7 @@ namespace ISS
             if ((keyboard.IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed) /*&& !menu_keyright_pressed*/)
             {
                 menu_keyright_pressed = true;
-
+                soundFXes.Add(EnumSoundFX.MenuNavigation);
                 if (gameMenu.GetMenuType() == EnumGameMenuType.Settings)
                 {
                     if (gameMenu.GetSelected() == 0)
@@ -212,9 +236,23 @@ namespace ISS
             {
                 menu_keyselect_pressed = true;
                 soundFXes.Add(EnumSoundFX.MenuSelected);
-                if (gameMenu.GetMenuType() == EnumGameMenuType.Settings && gameMenu.GetSelected() == 3)
+                if (gameMenu.GetMenuType() == EnumGameMenuType.Settings)
                 {
-                    exit = true;
+                    switch (gameMenu.GetSelected())
+                    {
+                        case 2:
+                            player.Revive();
+                            player.HealthRefill();
+                            //player.OxygenRefill();
+                            player.EnergyRefill();
+                            gameMenu.Activate(false);
+                            soundFXes.Add(EnumSoundFX.MenuClose);
+                            jump_key_pressed = true;
+                            break;
+                        case 3:
+                            exit = true;
+                            break;
+                    }
                 }
 
                 if (gameMenu.GetMenuType() == EnumGameMenuType.MachineDefault)
@@ -237,6 +275,7 @@ namespace ISS
                             break;
                     }
                     gameMenu.Activate(false);
+                    soundFXes.Add(EnumSoundFX.MenuClose);
                     jump_key_pressed = true;
                 }
             }
@@ -248,6 +287,22 @@ namespace ISS
             if (soundFXes.Count == 0) return EnumSoundFX.None;
             var soundFX = soundFXes[0];
             soundFXes.Remove(soundFX);
+            return soundFX;
+        }
+
+        public EnumSoundFX GetSoundFXInstance()
+        {
+            if (soundFXesI.Count == 0) return EnumSoundFX.None;
+            var soundFX = soundFXesI[0];
+            soundFXesI.Remove(soundFX);
+            return soundFX;
+        }
+
+        public EnumSoundFX GetStopSoundFXInstance()
+        {
+            if (soundFXesIStop.Count == 0) return EnumSoundFX.None;
+            var soundFX = soundFXesIStop[0];
+            soundFXesIStop.Remove(soundFX);
             return soundFX;
         }
     }

@@ -81,16 +81,22 @@ namespace ISS
             switch (Type)
             {
                 case EnumGameObjectType.Default:
-                    texture = Globals.Content.Load<Texture2D>("objectMachineDefault");
+                    texture = Globals.Content.Load<Texture2D>("Object/MachineDefault");
                     break;
                 case EnumGameObjectType.Health:
-                    texture = Globals.Content.Load<Texture2D>("objectMachineHealth");
+                    texture = Globals.Content.Load<Texture2D>("Object/MachineHealth");
                     break; 
                 case EnumGameObjectType.Oxygen:
-                    texture = Globals.Content.Load<Texture2D>("objectMachineOxygen");
+                    texture = Globals.Content.Load<Texture2D>("Object/MachineOxygen");
                     break;
                 case EnumGameObjectType.Energy:
-                    texture = Globals.Content.Load<Texture2D>("objectMachineEnergy");
+                    texture = Globals.Content.Load<Texture2D>("Object/MachineEnergy");
+                    break;
+                case EnumGameObjectType.WoodenBox:
+                    texture = Globals.Content.Load<Texture2D>("Object/WoodenBox");
+                    break;
+                case EnumGameObjectType.MetalWall:
+                    texture = Globals.Content.Load<Texture2D>("Object/MetalWall");
                     break;
             }
         }
@@ -117,61 +123,63 @@ namespace ISS
 
         private void DrawRefillBar()
         {
-            if (type == EnumGameObjectType.Default) return;
-            switch (_refill)
+            if (type == EnumGameObjectType.Health || type == EnumGameObjectType.Oxygen || type == EnumGameObjectType.Energy)
             {
-                case 0:
-                    var rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
-                    Globals.SpriteBatch.Draw(rect_red, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-                    break;
+                switch (_refill)
+                {
+                    case 0:
+                        var rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
+                        Globals.SpriteBatch.Draw(rect_red, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                        break;
 
-                case 1:
-                    rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
-                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                    case 1:
+                        rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
+                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
 
-                    rect_pos = new Vector2(Position.X + 20, Position.Y + texture.Height - 28);
-                    Globals.SpriteBatch.Draw(rect_red, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-                    break;
+                        rect_pos = new Vector2(Position.X + 20, Position.Y + texture.Height - 28);
+                        Globals.SpriteBatch.Draw(rect_red, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                        break;
 
-                case 2:
-                    rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
-                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                    case 2:
+                        rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
+                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
 
-                    rect_pos = new Vector2(Position.X + 20, Position.Y + texture.Height - 28);
-                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                        rect_pos = new Vector2(Position.X + 20, Position.Y + texture.Height - 28);
+                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
 
-                    rect_pos = new Vector2(Position.X + 44, Position.Y + texture.Height - 28);
-                    Globals.SpriteBatch.Draw(rect_red, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-                    break;
+                        rect_pos = new Vector2(Position.X + 44, Position.Y + texture.Height - 28);
+                        Globals.SpriteBatch.Draw(rect_red, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                        break;
 
-                case 3:
-                    rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
-                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                    case 3:
+                        rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
+                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
 
-                    rect_pos = new Vector2(Position.X + 20, Position.Y + texture.Height - 28);
-                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                        rect_pos = new Vector2(Position.X + 20, Position.Y + texture.Height - 28);
+                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
 
-                    rect_pos = new Vector2(Position.X + 44, Position.Y + texture.Height - 28);
-                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                        rect_pos = new Vector2(Position.X + 44, Position.Y + texture.Height - 28);
+                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
 
-                    rect_pos = new Vector2(Position.X + 60, Position.Y + texture.Height - 28);
-                    Globals.SpriteBatch.Draw(rect_red, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-                    break;
+                        rect_pos = new Vector2(Position.X + 60, Position.Y + texture.Height - 28);
+                        Globals.SpriteBatch.Draw(rect_red, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                        break;
 
-                case 4:
-                    rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
-                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                    case 4:
+                        rect_pos = new Vector2(Position.X + 4, Position.Y + texture.Height - 28);
+                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
 
-                    rect_pos = new Vector2(Position.X + 20, Position.Y + texture.Height - 28);
-                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                        rect_pos = new Vector2(Position.X + 20, Position.Y + texture.Height - 28);
+                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
 
-                    rect_pos = new Vector2(Position.X + 44, Position.Y + texture.Height - 28);
-                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                        rect_pos = new Vector2(Position.X + 44, Position.Y + texture.Height - 28);
+                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
 
-                    rect_pos = new Vector2(Position.X + 60, Position.Y + texture.Height - 28);
-                    Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
-                    break;
-            }
+                        rect_pos = new Vector2(Position.X + 60, Position.Y + texture.Height - 28);
+                        Globals.SpriteBatch.Draw(rect_green, rect_pos, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.81f);
+                        break;
+                }
+            }            
         }
 
         public void UpdateLoadingBar(bool update_type_0)
@@ -236,6 +244,11 @@ namespace ISS
         public EnumGameObjectType GetObjectType()
         {
             return type;
+        }
+
+        public Rectangle GetRectangle()
+        {
+            return new Rectangle((int)Position.X, (int)Position.Y, (int)Size.X, (int)Size.Y);
         }
     }
 }

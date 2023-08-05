@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Collections.Generic;
+using Windows.UI.Xaml.Controls;
 
 namespace ISS
 {
@@ -19,8 +20,7 @@ namespace ISS
         public bool Crouch;
         public bool Interact = false;
         public GameObject GameObjectInteract = null;
-        public Vector2 Origin { get; }        
-
+        public Vector2 Origin { get; }
         //public Vector2 Velocity;
         public float Ground;
         public bool Grounded;
@@ -33,7 +33,9 @@ namespace ISS
         private float _energy;
 
         private int energyCooldown = 0;
-        private int fallingDown = 0;
+        private int fallingDown = -25;
+        //Verify if the player is falling
+        public float LastY = 0;
 
         //private readonly ProgressBar _healthBar;
         private readonly ProgressBarAnimated _healthBarAnimated;
@@ -42,26 +44,35 @@ namespace ISS
 
         private readonly AnimationManager _anims = new AnimationManager();
         private List<EnumSoundFX> soundFXes = new List<EnumSoundFX>();
+        private List<EnumSoundFX> soundFXesI = new List<EnumSoundFX>();
+        private List<EnumSoundFX> soundFXesIStop = new List<EnumSoundFX>();
+
+        private bool Alive = true;
+        private int hurts = 0;
+        public bool leftObstruction = false;
+        public bool rightObstruction = false;
 
         public Player(Vector2 position, float health = 100f, float oxigen = 100f, float energy = 100f)
         {
             //speed = 0f;
-            texture = Globals.Content.Load<Texture2D>("sprite_player02x4");
-            _anims.AddAnimation(new Vector2(0, 0), new Animation(texture, 4, 3, 0, 2, 0.25f, 1)); //Stand
-            _anims.AddAnimation(new Vector2(1, 0), new Animation(texture, 4, 3, 0, 3, 0.1f, 2));  //Right
-            _anims.AddAnimation(new Vector2(-1, 0), new Animation(texture, 4, 3, 0, 3, 0.1f, 2)); //Left
-            _anims.AddAnimation(new Vector2(0, -1), new Animation(texture, 4, 3, 0, 3, 0.05f, 3)); //Jump & Fly
-            _anims.AddAnimation(new Vector2(0, 1), new Animation(texture, 4, 3, 3, 3, 0.25f, 1)); //Crouch
-            //_anims.AddAnimation(new Vector2(0, -1), new Animation(texture, 4, 3, 0, 3, 0.25f, 3)); //Fly
+            int framesX = 5;
+            int framesY = 3;
+            texture = Globals.Content.Load<Texture2D>("Sprite/Player01-1");
+            _anims.AddAnimation(new Vector2(0, 0),  new Animation(texture, framesX, framesY, 0, 2, 0.25f, 1)); //Stand
+            _anims.AddAnimation(new Vector2(1, 0),  new Animation(texture, framesX, framesY, 0, 3, 0.1f, 2));  //Right
+            _anims.AddAnimation(new Vector2(-1, 0), new Animation(texture, framesX, framesY, 0, 3, 0.1f, 2)); //Left
+            _anims.AddAnimation(new Vector2(0, -1), new Animation(texture, framesX, framesY, 0, 4, 0.05f, 3)); //Jump & Fly
+            _anims.AddAnimation(new Vector2(0, 1),  new Animation(texture, framesX, framesY, 3, 4, 0.25f, 1)); //Crouch & Die
+            //_anims.AddAnimation(new Vector2(0, -1), new Animation(texture, framesX, framesY, 0, 3, 0.25f, 3)); //Fly
 
-            Origin = new Vector2((texture.Width / 4)/2, (texture.Height / 3)/2);
-            Size = new Vector2(texture.Width / 4, texture.Height / 3);
+            Origin = new Vector2((texture.Width / framesX) /2, (texture.Height / framesY) /2);
+            Size = new Vector2(texture.Width / framesX, texture.Height / framesY);
             Position = new Vector2(position.X + Size.X/2, position.Y);
 
-            var BarBackground = Globals.Content.Load<Texture2D>("BarBackground");
-            var BarHealth = Globals.Content.Load<Texture2D>("BarHealth");
-            var BarOxigen = Globals.Content.Load<Texture2D>("BarOxigen");
-            var BarEnergy = Globals.Content.Load<Texture2D>("BarEnergy");
+            var BarBackground = Globals.Content.Load<Texture2D>("Hud/BarBackground");
+            var BarHealth = Globals.Content.Load<Texture2D>("Hud/BarHealth");
+            var BarOxigen = Globals.Content.Load<Texture2D>("Hud/BarOxigen");
+            var BarEnergy = Globals.Content.Load<Texture2D>("Hud/BarEnergy");
 
             _maxHealth = health;
             _health = health;
@@ -85,20 +96,45 @@ namespace ISS
             //{
             //    Position += Vector2.Normalize(InputManager.Direction) * speed * Globals.ElapsedSeconds;
             //}
+
+            //_healthBar.Update(_health);
+            _healthBarAnimated.Update(_health);
+
+            if (!Alive)
+            {
+                Crouch = true;
+                _anims.Update(new Vector2(0, 1), false, 1);
+                fly = false;
+                FallingDownResolve();
+                JumpFlyResolve();
+                return;
+            }
+
+            if(hurts > 0)
+            {
+                Crouch = true;
+                _anims.Update(new Vector2(0, 1), false, 1);
+                hurts--;
+                return;
+            }
+
+            _oxigenBarAnimated.Update(_oxygen);
+            _energyBarAnimated.Update(_energy);
+
             if (Running || fly)
             {
-                _anims.Update(InputManager.Direction, true, true);
+                _anims.Update(InputManager.Direction, true);
             }
             else
             {
-                _anims.Update(InputManager.Direction, false, true);
+                _anims.Update(InputManager.Direction, false);
             }
 
             if (Running) OxygenLost();
+            FallingDownResolve();
+            JumpFlyResolve();
 
-            JumpResolve();
-
-            if (Crouch)_anims.Update(new Vector2(0, 1), false, false);            
+            if (Crouch)_anims.Update(new Vector2(0, 1), false, 0);            
 
             if (Interact)
             {
@@ -123,10 +159,8 @@ namespace ISS
             //EnergyCharge();
             energyCooldown--;
 
-            //_healthBar.Update(_health);
-            _healthBarAnimated.Update(_health);
-            _oxigenBarAnimated.Update(_oxygen);
-            _energyBarAnimated.Update(_energy);
+            if(!Interact && leftObstruction) leftObstruction = false;
+            if (!Interact && rightObstruction) rightObstruction = false;
         }
          
         public void Draw()
@@ -136,15 +170,45 @@ namespace ISS
             _healthBarAnimated.Draw();
             _oxigenBarAnimated.Draw();
             _energyBarAnimated.Draw();
+
+            if (!Alive)
+            {
+                SpriteFont font = Globals.Content.Load<SpriteFont>("Font/fontMedium");
+                Globals.SpriteBatch.DrawString(font, " ___", new Vector2(Position.X + 2, Position.Y-60), Color.Red, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9998f);
+                Globals.SpriteBatch.DrawString(font, "/     \\", new Vector2(Position.X + 4, Position.Y -40), Color.Red, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9997f);
+                Globals.SpriteBatch.DrawString(font, "| ()() |", new Vector2(Position.X + 2, Position.Y -20), Color.Red, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9997f);
+                Globals.SpriteBatch.DrawString(font, "\\  ^  /", new Vector2(Position.X + 2, Position.Y), Color.Red, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9997f);
+                Globals.SpriteBatch.DrawString(font, "  |||||", new Vector2(Position.X + 2, Position.Y + 20), Color.Red, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9997f);
+            }
+
+            if (Alive && hurts > 0)
+            {
+                SpriteFont font = Globals.Content.Load<SpriteFont>("Font/fontMedium");
+                Globals.SpriteBatch.DrawString(font, "  ===", new Vector2(Position.X, Position.Y - 80), Color.Red, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9998f);
+                Globals.SpriteBatch.DrawString(font, "    ||", new Vector2(Position.X + 4, Position.Y - 60), Color.Red, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9997f);
+                Globals.SpriteBatch.DrawString(font, "  //\\\\", new Vector2(Position.X + 2, Position.Y -40), Color.Red, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9997f);
+                Globals.SpriteBatch.DrawString(font, "  ||__||", new Vector2(Position.X - 4, Position.Y -20), Color.Red, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9997f);
+                Globals.SpriteBatch.DrawString(font, "  \\\\//", new Vector2(Position.X + 2, Position.Y), Color.Red, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9997f);
+                Globals.SpriteBatch.DrawString(font, "    ||", new Vector2(Position.X + 4, Position.Y + 20), Color.Red, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9997f);
+            }
         }
 
         public void TakeDamage(float damage)
         {
             _health -= damage;
-            if (_health < 0) _health = 0;
+            if (_health < 0)
+            {
+                _health = 0;
+                if(Alive) soundFXes.Add(EnumSoundFX.PlayerDead);
+                soundFXes.Add(EnumSoundFX.Hit);
+                Alive = false;
+            }
+            if (!Alive) return;
             if(damage > 20)
             {
                 soundFXes.Add(EnumSoundFX.PlayerTakeDamage2);
+                soundFXes.Add(EnumSoundFX.Hit);
+                hurts = 100;
             }
             else
             {
@@ -183,7 +247,19 @@ namespace ISS
             {
                 _oxygen = 0;
                 _health -= Globals.ElapsedSeconds * 8;
-                if (_health < 0) _health = 0;
+                soundFXesI.Add(EnumSoundFX.PlayerSuffocating);
+                if (_health < 0)
+                {
+                    Alive = false;
+                    soundFXes.Add(EnumSoundFX.PlayerDead);
+                    _health = 0;
+                    soundFXesIStop.Add(EnumSoundFX.PlayerSuffocating);
+                }
+            }
+            else
+            {
+                if (soundFXesIStop.Contains(EnumSoundFX.PlayerSuffocating)) return;
+                soundFXesIStop.Add(EnumSoundFX.PlayerSuffocating);
             }
         }
 
@@ -233,9 +309,9 @@ namespace ISS
             if(_energy<0) _energy = 0;
         }
 
-        private void JumpResolve()
-        {
-            if (Jump && JumpPower <= 0)
+        private void JumpFlyResolve()
+        {     
+            if (Jump && JumpPower <= 0 && Grounded)
             {
                 JumpPower = 875f;
                 Grounded = false;
@@ -253,11 +329,11 @@ namespace ISS
                 Position.Y += Globals.Gravity;
                 if (fly)
                 {
-                    _anims.Update(new Vector2(0, -1), false, true);
+                    _anims.Update(new Vector2(0, -1), false);
                 }
                 else
                 {
-                    _anims.Update(new Vector2(0, -1), false, false);
+                    _anims.Update(new Vector2(0, -1), false, 0);
                 }
             }
 
@@ -272,23 +348,40 @@ namespace ISS
             }
 
             if (fly)
-            {
-                //if (Grounded)JumpPower += 600;                
+            {               
                 Position += Vector2.Normalize(new Vector2(0, -1)) * JumpPower * Globals.ElapsedSeconds;
                 Grounded = false;
                 Jump = false;
                 EnergyLost(JumpPower * 0.02f);
+            }           
+
+        }
+
+        private void FallingDownResolve()
+        {
+            if (LastY == Position.Y)
+            {
+                Grounded = true;
+            }
+            if (LastY < Position.Y)
+            {
+                Grounded = false;
+            }
+            LastY = Position.Y;
+
+            if (Grounded && fallingDown > 0 && !fly)
+            {
+                TakeDamage(fallingDown);
+                Jump = false;
             }
 
-            if (!Grounded && JumpPower <= 0)
+            if (!Grounded && JumpPower <= 425)
             {
                 fallingDown++;
             }
-
-            if(Grounded && fallingDown > 0)
+            else
             {
-                TakeDamage(fallingDown);
-                fallingDown = 0;
+                fallingDown = -20;
             }
         }
 
@@ -326,12 +419,12 @@ namespace ISS
             return EnumInteractionType.None;
         }
 
-        public float Oxygen()
+        public float GetOxygen()
         {
             return _oxygen;
         }       
 
-        public void setFly(float value) { 
+        public void SetFly(float value) { 
             if (value > 0)
             {
                 fly = true;
@@ -345,7 +438,7 @@ namespace ISS
             }
         }
 
-        public bool isFly()
+        public bool IsFlying()
         {
             return fly;
         }
@@ -356,6 +449,97 @@ namespace ISS
             var soundFX = soundFXes[0];
             soundFXes.Remove(soundFX);
             return soundFX;
+        }
+
+        public int GetFallingDown()
+        {
+            return fallingDown;
+        }
+
+        public void Revive()
+        {
+            Alive = true;
+        }
+
+        public bool IsAlive()
+        {
+           return Alive;
+        }
+
+        public float GetHealth()
+        {
+            return _health;
+        }
+
+        public float GetEnergy()
+        {
+            return _energy;
+        }
+
+        public EnumSoundFX GetSoundFXInstance()
+        {
+            if (soundFXesI.Count == 0) return EnumSoundFX.None;
+            var soundFX = soundFXesI[0];
+            soundFXesI.Remove(soundFX);
+            return soundFX;
+        }
+
+        public EnumSoundFX GetStopSoundFXInstance()
+        {
+            if (soundFXesIStop.Count == 0) return EnumSoundFX.None;
+            var soundFX = soundFXesIStop[0];
+            soundFXesIStop.Remove(soundFX);
+            return soundFX;
+        }
+
+        public void ObjectCollideResolve(GameObject GameObjectInteract)
+        {
+            Interact = true;
+            this.GameObjectInteract = GameObjectInteract;
+
+            leftObstruction = false;
+            rightObstruction = false;
+            if (GameObjectInteract.GetObjectType() == EnumGameObjectType.MetalWall)
+            {
+                //Rectangle playerRect = _anims.instantRect();
+                //Rectangle playerRect = new Rectangle((int)Position.X, (int)Position.Y, (int)Size.X, (int)Size.Y);
+                //Rectangle objectRec = GameObjectInteract.GetRectangle();
+
+                //if (playerRect.Left/2 < objectRec.Right && playerRect.Right > objectRec.Left)
+                //{
+                //    leftObstruction = true;
+                //}
+
+                //if (playerRect.Right*2 > objectRec.Left && playerRect.Left < objectRec.Right)
+                //{
+                //    rightObstruction = true;
+                //}
+
+                //if (playerRect.Right > GameObjectInteract.Position.X)
+                //{
+                //    leftObstruction = true;
+                //}
+                //var GL = GameObjectInteract.Position.X + GameObjectInteract.Size.X;
+                //var PR = Position.X + Size.X;
+                //if (GL > Position.X && GameObjectInteract.Position.X < PR)
+                //{
+                //    leftObstruction = true;
+                //}
+                //if (GameObjectInteract.Position.X < Position.X + Size.X) 
+                //{ 
+                //    rightObstruction = true;
+                //}
+            }
+
+            var bottom = Position.Y + Size.Y;
+            var bottomLimit = bottom - Size.Y * 0.1;
+            if ((bottom >= GameObjectInteract.Position.Y) && (bottomLimit < GameObjectInteract.Position.Y)
+                && (LastY < Position.Y))
+            {
+                Position.Y = GameObjectInteract.Position.Y - Size.Y;
+                Ground = GameObjectInteract.Position.Y;
+                Grounded = true;
+            }
         }
     }
 }

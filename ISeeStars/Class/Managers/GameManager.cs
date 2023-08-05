@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SharpDX.WIC;
 using System.Collections.Generic;
 
 namespace ISS
@@ -13,30 +14,36 @@ namespace ISS
         private int _interactObjectsId = -1;
         private readonly List<GameObject> _objects = new List <GameObject>();
 
-        //Verify if the player is falling
-        private float lastY = 0;
         public GameMenu gameMenu;
 
         public GameManager(Vector2 playerPosition)
         {
-            _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL0002"), 0.0f, 0.0f, true));
-            _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL1"), 0.1f, 0.2f, false));
-            _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL2"), 0.2f, 0.5f, false));
-            _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL3"), 0.3f, 1.0f, false));
+            _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("Background/bgMarsL0002"), 0.0f, 0.0f, true));
+            _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("Background/bgMarsL1"), 0.1f, 0.2f, false));
+            _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("Background/bgMarsL2"), 0.2f, 0.5f, false));
+            _bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("Background/bgMarsL3"), 0.3f, 1.0f, false));
             //_bgm.AddLayer(new Layer(Globals.Content.Load<Texture2D>("bgMarsL4"), 0.4f, 0.2f, -100.0f));
 
             soundManager = new SoundManager();
 
             player = new Player(playerPosition);
-            //GameObject gameObject0 = new GameObject(new Vector2(-110, 0), EnumGameObjectType.Default);
+            GameObject gameObject0 = new GameObject(new Vector2(-110, 0), EnumGameObjectType.WoodenBox);
             GameObject gameObject1 =  new GameObject(new Vector2(10,  0), EnumGameObjectType.Default);
             GameObject gameObject2 = new GameObject(new Vector2(110, 0), EnumGameObjectType.Default);
             GameObject gameObject3 = new GameObject(new Vector2(210, 0), EnumGameObjectType.Default);
+            GameObject gameObject4 = new GameObject(new Vector2(310, 0), EnumGameObjectType.MetalWall);
 
-            //_objects.Add(gameObject0);
+            _objects.Add(gameObject0);
             _objects.Add(gameObject1);
             _objects.Add(gameObject2);
             _objects.Add(gameObject3);
+            _objects.Add(gameObject4);
+
+            for (int i = 0; i < 5; i++)
+            {
+                GameObject go = new GameObject(new Vector2(-110, gameObject0.Position.Y -= i * 80), EnumGameObjectType.WoodenBox);
+                _objects.Add(go);
+            }
 
             gameMenu = new GameMenu(EnumGameMenuType.Settings, 3, soundManager.GetBGMVolume());
         }
@@ -46,7 +53,13 @@ namespace ISS
             _inputManager.Update(player, soundManager, gameMenu);
 
             soundManager.PlayFX(player.GetSoundFX());
+            soundManager.PlayFXInstance(player.GetSoundFXInstance(), EnumSoundOrigin.Player);
+            soundManager.StopFXInstance(player.GetStopSoundFXInstance(), EnumSoundOrigin.Player);
+
             soundManager.PlayFX(_inputManager.GetSoundFX());
+            soundManager.PlayFXInstance(_inputManager.GetSoundFXInstance(), EnumSoundOrigin.Player);
+            soundManager.StopFXInstance(_inputManager.GetStopSoundFXInstance(), EnumSoundOrigin.Player);
+
             if (gameMenu.IsActive())
             {
                 gameMenu.Update();
@@ -62,7 +75,8 @@ namespace ISS
             player.Update();
 
             CheckCollisions();
-            CheckCollisions(player);
+            CheckInteractCollisions();
+            CheckOtherCollisions();
 
         }
 
@@ -79,7 +93,7 @@ namespace ISS
             DrawDebugInfo();
         }
 
-        private void CheckCollisions(Player player)
+        private void CheckInteractCollisions()
         {
             var isCollide = false;
             for (int i = 0; i < _objects.Count; i++)
@@ -87,25 +101,25 @@ namespace ISS
                 isCollide = SquareCollision(_objects[i].Position, _objects[i].Size, player.Position, player.Size);
                 if (isCollide)
                 {
-                    player.Interact = true;
-                    player.GameObjectInteract = _objects[i];
                     _interactObjectsId = i;
-                    var bottom = player.Position.Y + player.Size.Y;
-                    var bottomLimit = bottom - player.Size.Y * 0.1;
-                    if ((bottom >= _objects[i].Position.Y) && (bottomLimit < _objects[i].Position.Y)
-                        && (lastY < player.Position.Y))
-                    {
-                        player.Position.Y = _objects[i].Position.Y - player.Size.Y;
-                        player.Ground = _objects[i].Position.Y;
-                        player.Grounded = true;
-                    }
+                    //player.Interact = true;
+                    //player.GameObjectInteract = _objects[i];
+                    //var bottom = player.Position.Y + player.Size.Y;
+                    //var bottomLimit = bottom - player.Size.Y * 0.1;
+                    //if ((bottom >= _objects[i].Position.Y) && (bottomLimit < _objects[i].Position.Y)
+                    //    && (player.LastY < player.Position.Y))
+                    //{
+                    //    player.Position.Y = _objects[i].Position.Y - player.Size.Y;
+                    //    player.Ground = _objects[i].Position.Y;
+                    //    player.Grounded = true;
+                    //}
+                    player.ObjectCollideResolve(_objects[i]);
                     break;
                 }
                 player.Interact = false;
                 player.GameObjectInteract = null;
                 _interactObjectsId = -1;
             }
-            lastY = player.Position.Y;
 
             if(!isCollide) player.Ground = Globals.GroundLevel;
         }
@@ -125,6 +139,25 @@ namespace ISS
             }
         }
 
+        private void CheckOtherCollisions()
+        {
+            //Rectangle playerRect = new Rectangle((int)player.Position.X, (int)player.Position.Y, (int)player.Size.X, (int)player.Size.Y);
+            //Rectangle objectRec = player.GameObjectInteract.GetRectangle();
+
+            //for (int i = 0; i < _objects.Count; i++)
+            //{
+            //    if (playerRect.Left / 2 < objectRec.Right && playerRect.Right > objectRec.Left)
+            //    {
+            //        player.leftObstruction = true;
+            //    }
+
+            //    if (playerRect.Right * 2 > objectRec.Left && playerRect.Left < objectRec.Right)
+            //    {
+            //        player.rightObstruction = true;
+            //    }
+            //}               
+        }
+
         private bool SquareCollision(Vector2 PositionA, Vector2 SizeA, Vector2 PositionB, Vector2 SizeB)
         {
             if (
@@ -142,7 +175,16 @@ namespace ISS
         private void DrawDebugInfo()
         {
 #if DEBUG
-            SpriteFont font = Globals.Content.Load<SpriteFont>("fontMedium");
+            SpriteFont font = Globals.Content.Load<SpriteFont>("Font/fontMedium");
+
+            Globals.SpriteBatch.DrawString(font, ((int)player.GetHealth()).ToString().PadLeft(3, '0'), new Vector2(150, 20), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, ((int)player.GetHealth()).ToString().PadLeft(3, '0'), new Vector2(152, 22), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            Globals.SpriteBatch.DrawString(font, ((int)player.GetOxygen()).ToString().PadLeft(3, '0'), new Vector2(150, 55), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, ((int)player.GetOxygen()).ToString().PadLeft(3, '0'), new Vector2(152, 57), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            Globals.SpriteBatch.DrawString(font, ((int)player.GetEnergy()).ToString().PadLeft(3, '0'), new Vector2(150, 90), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, ((int)player.GetEnergy()).ToString().PadLeft(3, '0'), new Vector2(152, 92), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
 
             var hh = (int)Globals.Time / 60;
             var mm = (int)Globals.Time % 60;
@@ -158,8 +200,8 @@ namespace ISS
 
             Globals.SpriteBatch.DrawString(font, "Jump:" + player.Jump, new Vector2(10, 160), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
             Globals.SpriteBatch.DrawString(font, "Jump:" + player.Jump, new Vector2(12, 162), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
-            Globals.SpriteBatch.DrawString(font, "Fly:" + player.isFly(), new Vector2(10, 180), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1); ;
-            Globals.SpriteBatch.DrawString(font, "Fly:" + player.isFly(), new Vector2(12, 182), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            Globals.SpriteBatch.DrawString(font, "Fly:" + player.IsFlying(), new Vector2(10, 180), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1); ;
+            Globals.SpriteBatch.DrawString(font, "Fly:" + player.IsFlying(), new Vector2(12, 182), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
             Globals.SpriteBatch.DrawString(font, "Run:" + player.Running, new Vector2(10, 200), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
             Globals.SpriteBatch.DrawString(font, "Run:" + player.Running, new Vector2(12, 202), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
             Globals.SpriteBatch.DrawString(font, "Crouch:" + player.Crouch, new Vector2(10, 220), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
@@ -176,6 +218,15 @@ namespace ISS
 
             Globals.SpriteBatch.DrawString(font, "menu_selected:" + InputManager.menu_selected.ToString(), new Vector2(10, 320), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
             Globals.SpriteBatch.DrawString(font, "menu_selected:" + InputManager.menu_selected.ToString(), new Vector2(12, 322), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            Globals.SpriteBatch.DrawString(font, "FallingDown:" + player.GetFallingDown(), new Vector2(10, 340), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "FallingDown:" + player.GetFallingDown(), new Vector2(12, 342), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            Globals.SpriteBatch.DrawString(font, "leftObstruction:" + player.leftObstruction, new Vector2(10, 360), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "leftObstruction:" + player.leftObstruction, new Vector2(12, 362), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            Globals.SpriteBatch.DrawString(font, "rightObstruction:" + player.rightObstruction, new Vector2(10, 380), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "rightObstruction:" + player.rightObstruction, new Vector2(12, 382), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
 
             if (player.Interact)
             {

@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
-using SharpDX.Direct2D1;
 
 namespace ISS
 {
@@ -53,12 +52,12 @@ namespace ISS
             _frameTimeLeft = _frameTime;
         }
 
-        public void Update(bool fastAnimation, bool animate)
+        public void Update(bool fastAnimation, int specificFrame = -1)
         {
             if (!_active) return;
-            if (!animate)
+            if (specificFrame != -1)
             {
-                _frame = 0;
+                _frame = specificFrame;
                 return;
             }
 
@@ -86,6 +85,11 @@ namespace ISS
                 spriteEffects = SpriteEffects.FlipHorizontally;
             }
             Globals.SpriteBatch.Draw(_texture, pos, _sourceRectangles[_frame], Color.White, 0, Vector2.Zero, Vector2.One, spriteEffects, 0.9f);
+        }
+
+        public Rectangle instantRect()
+        {
+            return _sourceRectangles[_frame];
         }
     }
 
