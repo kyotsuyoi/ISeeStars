@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SharpDX.WIC;
 using System.Collections.Generic;
+using System.Security.AccessControl;
 
 namespace ISS
 {
@@ -15,6 +16,7 @@ namespace ISS
         private readonly List<GameObject> _objects = new List <GameObject>();
 
         public GameMenu gameMenu;
+        public Collision collision = new();
 
         public GameManager(Vector2 playerPosition)
         {
@@ -31,7 +33,7 @@ namespace ISS
             GameObject gameObject1 =  new GameObject(new Vector2(10,  0), EnumGameObjectType.Default);
             GameObject gameObject2 = new GameObject(new Vector2(110, 0), EnumGameObjectType.Default);
             GameObject gameObject3 = new GameObject(new Vector2(210, 0), EnumGameObjectType.Default);
-            GameObject gameObject4 = new GameObject(new Vector2(310, 0), EnumGameObjectType.MetalWall);
+            GameObject gameObject4 = new GameObject(new Vector2(450, 0), EnumGameObjectType.MetalWall);
 
             _objects.Add(gameObject0);
             _objects.Add(gameObject1);
@@ -78,6 +80,7 @@ namespace ISS
             CheckInteractCollisions();
             CheckOtherCollisions();
 
+            TestCollision();
         }
 
         public void Draw()
@@ -102,17 +105,6 @@ namespace ISS
                 if (isCollide)
                 {
                     _interactObjectsId = i;
-                    //player.Interact = true;
-                    //player.GameObjectInteract = _objects[i];
-                    //var bottom = player.Position.Y + player.Size.Y;
-                    //var bottomLimit = bottom - player.Size.Y * 0.1;
-                    //if ((bottom >= _objects[i].Position.Y) && (bottomLimit < _objects[i].Position.Y)
-                    //    && (player.LastY < player.Position.Y))
-                    //{
-                    //    player.Position.Y = _objects[i].Position.Y - player.Size.Y;
-                    //    player.Ground = _objects[i].Position.Y;
-                    //    player.Grounded = true;
-                    //}
                     player.ObjectCollideResolve(_objects[i]);
                     break;
                 }
@@ -141,21 +133,48 @@ namespace ISS
 
         private void CheckOtherCollisions()
         {
-            //Rectangle playerRect = new Rectangle((int)player.Position.X, (int)player.Position.Y, (int)player.Size.X, (int)player.Size.Y);
-            //Rectangle objectRec = player.GameObjectInteract.GetRectangle();
+            Rectangle playerRect = new Rectangle((int)player.Position.X, (int)player.Position.Y, (int)player.Size.X, (int)player.Size.Y);
 
-            //for (int i = 0; i < _objects.Count; i++)
-            //{
-            //    if (playerRect.Left / 2 < objectRec.Right && playerRect.Right > objectRec.Left)
-            //    {
-            //        player.leftObstruction = true;
-            //    }
+            for (int i = 0; i < _objects.Count; i++)
+            {
+                Rectangle objectRec = _objects[i].GetRectangle();
+                if (_objects[i].GetObjectType() == EnumGameObjectType.MetalWall)
+                {
+                    if (playerRect.Bottom * 0.95 > objectRec.Top)
+                    {
+                        var val1 = objectRec.Left * 1.02;
+                        var val2 = objectRec.Left + objectRec.Size.X;
+                        var b1 = playerRect.Right >= val1;
+                        var b2 = playerRect.Right <= val2;
 
-            //    if (playerRect.Right * 2 > objectRec.Left && playerRect.Left < objectRec.Right)
-            //    {
-            //        player.rightObstruction = true;
-            //    }
-            //}               
+                        if (playerRect.Right >= objectRec.Left * 1.02 &&
+                            playerRect.Right <= objectRec.Right)
+                        {
+                            player.ObstructionRight = true;
+                        }
+                        if (playerRect.Left <= objectRec.Right * 0.98 &&
+                            playerRect.Left >= objectRec.Left)
+                        {
+                            player.ObstructionLeft = true;
+                        }
+                    }
+                }                
+            }
+        }
+
+        private void TestCollision()
+        {
+            Rectangle playerRect = new Rectangle((int)player.Position.X, (int)player.Position.Y, (int)player.Size.X, (int)player.Size.Y);
+
+            collision.contactLeft = 0;
+            collision.contactRight = 0;
+            collision.contactTop = 0;
+            collision.contactBottom = 0;
+            for (int i = 0; i < _objects.Count; i++)
+            {
+                Rectangle objectRec = _objects[i].GetRectangle();
+                collision.CheckCollisionSide(playerRect, objectRec);
+            }
         }
 
         private bool SquareCollision(Vector2 PositionA, Vector2 SizeA, Vector2 PositionB, Vector2 SizeB)
@@ -222,11 +241,23 @@ namespace ISS
             Globals.SpriteBatch.DrawString(font, "FallingDown:" + player.GetFallingDown(), new Vector2(10, 340), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
             Globals.SpriteBatch.DrawString(font, "FallingDown:" + player.GetFallingDown(), new Vector2(12, 342), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
 
-            Globals.SpriteBatch.DrawString(font, "leftObstruction:" + player.leftObstruction, new Vector2(10, 360), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
-            Globals.SpriteBatch.DrawString(font, "leftObstruction:" + player.leftObstruction, new Vector2(12, 362), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            //Globals.SpriteBatch.DrawString(font, "ObstructionLeft:" + player.ObstructionLeft, new Vector2(10, 360), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            //Globals.SpriteBatch.DrawString(font, "ObstructionLeft:" + player.ObstructionLeft, new Vector2(12, 362), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
 
-            Globals.SpriteBatch.DrawString(font, "rightObstruction:" + player.rightObstruction, new Vector2(10, 380), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
-            Globals.SpriteBatch.DrawString(font, "rightObstruction:" + player.rightObstruction, new Vector2(12, 382), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+            //Globals.SpriteBatch.DrawString(font, "ObstructionRight:" + player.ObstructionRight, new Vector2(10, 380), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            //Globals.SpriteBatch.DrawString(font, "ObstructionRight:" + player.ObstructionRight, new Vector2(12, 382), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            Globals.SpriteBatch.DrawString(font, "contactLeft:" + collision.contactLeft, new Vector2(10, 360), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "contactLeft:" + collision.contactLeft, new Vector2(12, 362), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            Globals.SpriteBatch.DrawString(font, "contactRight:" + collision.contactRight, new Vector2(10, 380), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "contactRight:" + collision.contactRight, new Vector2(12, 382), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            Globals.SpriteBatch.DrawString(font, "contactTop:" + collision.contactTop, new Vector2(10, 400), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "contactTop:" + collision.contactTop, new Vector2(12, 402), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
+
+            Globals.SpriteBatch.DrawString(font, "contactBottom:" + collision.contactBottom, new Vector2(10, 420), Color.White, 0f, Vector2.One, 1f, SpriteEffects.None, 1);
+            Globals.SpriteBatch.DrawString(font, "contactBottom:" + collision.contactBottom, new Vector2(12, 422), Color.Black, 0f, Vector2.One, 1f, SpriteEffects.None, 0.9999f);
 
             if (player.Interact)
             {

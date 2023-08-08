@@ -57,13 +57,13 @@ namespace ISS
                 return;
             }
             //Movement L R
-            if ((keyboard.IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed) && !player.Crouch)
+            if ((keyboard.IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed) && !player.Crouch && !player.ObstructionRight)
             {
                 _direction.X++;
                 BackgroundMovement = -_BackgroundSpeed;
                 _side = 'R';
             }
-            else if ((keyboard.IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed) && !player.Crouch)
+            else if ((keyboard.IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed) && !player.Crouch && !player.ObstructionLeft)
             {
                 _direction.X--;
                 BackgroundMovement = +_BackgroundSpeed;
@@ -93,7 +93,7 @@ namespace ISS
                 player.SetFly(0);
             }
 
-            if ((keyboard.IsKeyDown(Keys.U) || GamePad.GetState(PlayerIndex.One).Triggers.Left > 0.7f) && player.getEnergy() > 0 && !fly_key_pressed)
+            if ((keyboard.IsKeyDown(Keys.U) || GamePad.GetState(PlayerIndex.One).Triggers.Left > 0.7f) && player.getEnergy() > 0 && !fly_key_pressed && !player.IsHurt())
             {
                 fly_key_pressed = true;
                 soundFXesI.Add(EnumSoundFX.JetPack);
@@ -124,11 +124,12 @@ namespace ISS
             }
 
             //Jump
-            if ((keyboard.IsKeyDown(Keys.Space) || GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Pressed) && !player.Jump && !player.Crouch && player.Grounded && !jump_key_pressed)
+            if ((keyboard.IsKeyDown(Keys.Space) || GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Pressed) && 
+                !player.Jump && !player.Crouch && player.Grounded && !jump_key_pressed && !player.IsHurt())
             {
                 player.Jump = true;
                 jump_key_pressed = true;
-                //soundFXes.Add(EnumSoundFX.PlayerJump2);
+                soundFXes.Add(EnumSoundFX.Jump);
             }
             if (keyboard.IsKeyUp(Keys.Space) && GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Released) jump_key_pressed = false;
 

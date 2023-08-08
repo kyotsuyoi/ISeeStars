@@ -49,15 +49,15 @@ namespace ISS
 
         private bool Alive = true;
         private int hurts = 0;
-        public bool leftObstruction = false;
-        public bool rightObstruction = false;
+        public bool ObstructionLeft = false;
+        public bool ObstructionRight = false;
 
         public Player(Vector2 position, float health = 100f, float oxigen = 100f, float energy = 100f)
         {
             //speed = 0f;
             int framesX = 5;
             int framesY = 3;
-            texture = Globals.Content.Load<Texture2D>("Sprite/Player01-1");
+            texture = Globals.Content.Load<Texture2D>("Sprite/Player01-2");
             _anims.AddAnimation(new Vector2(0, 0),  new Animation(texture, framesX, framesY, 0, 2, 0.25f, 1)); //Stand
             _anims.AddAnimation(new Vector2(1, 0),  new Animation(texture, framesX, framesY, 0, 3, 0.1f, 2));  //Right
             _anims.AddAnimation(new Vector2(-1, 0), new Animation(texture, framesX, framesY, 0, 3, 0.1f, 2)); //Left
@@ -159,8 +159,8 @@ namespace ISS
             //EnergyCharge();
             energyCooldown--;
 
-            if(!Interact && leftObstruction) leftObstruction = false;
-            if (!Interact && rightObstruction) rightObstruction = false;
+            if(!Interact && ObstructionLeft) ObstructionLeft = false;
+            if (!Interact && ObstructionRight) ObstructionRight = false;
         }
          
         public void Draw()
@@ -497,40 +497,6 @@ namespace ISS
             Interact = true;
             this.GameObjectInteract = GameObjectInteract;
 
-            leftObstruction = false;
-            rightObstruction = false;
-            if (GameObjectInteract.GetObjectType() == EnumGameObjectType.MetalWall)
-            {
-                //Rectangle playerRect = _anims.instantRect();
-                //Rectangle playerRect = new Rectangle((int)Position.X, (int)Position.Y, (int)Size.X, (int)Size.Y);
-                //Rectangle objectRec = GameObjectInteract.GetRectangle();
-
-                //if (playerRect.Left/2 < objectRec.Right && playerRect.Right > objectRec.Left)
-                //{
-                //    leftObstruction = true;
-                //}
-
-                //if (playerRect.Right*2 > objectRec.Left && playerRect.Left < objectRec.Right)
-                //{
-                //    rightObstruction = true;
-                //}
-
-                //if (playerRect.Right > GameObjectInteract.Position.X)
-                //{
-                //    leftObstruction = true;
-                //}
-                //var GL = GameObjectInteract.Position.X + GameObjectInteract.Size.X;
-                //var PR = Position.X + Size.X;
-                //if (GL > Position.X && GameObjectInteract.Position.X < PR)
-                //{
-                //    leftObstruction = true;
-                //}
-                //if (GameObjectInteract.Position.X < Position.X + Size.X) 
-                //{ 
-                //    rightObstruction = true;
-                //}
-            }
-
             var bottom = Position.Y + Size.Y;
             var bottomLimit = bottom - Size.Y * 0.1;
             if ((bottom >= GameObjectInteract.Position.Y) && (bottomLimit < GameObjectInteract.Position.Y)
@@ -540,6 +506,12 @@ namespace ISS
                 Ground = GameObjectInteract.Position.Y;
                 Grounded = true;
             }
+        }
+
+        public bool IsHurt()
+        {
+            if(hurts > 0) return true;
+            return false;
         }
     }
 }
