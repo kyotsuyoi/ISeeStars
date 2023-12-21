@@ -154,7 +154,6 @@ namespace ISS
 
         private void MenuControl(KeyboardState keyboard, SoundManager songManager, GameMenu gameMenu, Player player)
         {
-
             menu_selected = gameMenu.GetSelected();
             //MENU
             if ((keyboard.IsKeyDown(Keys.Escape) || GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed) && !menu_key_pressed)
@@ -163,6 +162,7 @@ namespace ISS
                 {
                     gameMenu.Activate(false);
                     soundFXes.Add(EnumSoundFX.MenuClose);
+                    gameMenu.SaveSettings();
                 }
                 else
                 {
@@ -203,7 +203,7 @@ namespace ISS
                 {
                     if(gameMenu.GetSelected() == 0)
                     {
-                        songManager.SetBGMVolumePlus(false);
+                        songManager.SetBGMVolume(false);
                         gameMenu.SettingsSoundVolume(songManager.GetBGMVolume());
                     }
                     if (gameMenu.GetSelected() == 1)
@@ -224,7 +224,7 @@ namespace ISS
                 {
                     if (gameMenu.GetSelected() == 0)
                     {
-                        songManager.SetBGMVolumePlus(true);
+                        songManager.SetBGMVolume(true);
                         gameMenu.SettingsSoundVolume(songManager.GetBGMVolume());
                     }
                     if (gameMenu.GetSelected() == 1)

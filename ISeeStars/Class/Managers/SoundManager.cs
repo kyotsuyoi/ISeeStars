@@ -12,15 +12,15 @@ namespace ISS
         private List<SoundEffect> soundEffects;
         private List<SoundEffectI> soundEffectInstances = new();
 
-        public SoundManager()
+        public SoundManager(float soundVolume, float fxVolume)
         {
             BGMusic = Globals.Content.Load<Song>("BGM/BGM01");
-            MediaPlayer.Volume = 1f;
+            MediaPlayer.Volume = soundVolume;
 
             MediaPlayer.IsRepeating = true;
             MediaPlayer.Play(BGMusic);
 
-            SoundEffect.MasterVolume = 1f;
+            SoundEffect.MasterVolume = fxVolume;
             soundEffects = new List<SoundEffect>
             {
                 Globals.Content.Load<SoundEffect>("SoundFX/PlayerTakeDamage01"),
@@ -39,7 +39,7 @@ namespace ISS
             };
         }
 
-        public void SetBGMVolumePlus(bool plus)
+        public void SetBGMVolume(bool plus)
         {
             // 0.0f is silent, 1.0f is full volume
             if (plus)

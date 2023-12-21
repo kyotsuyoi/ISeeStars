@@ -33,7 +33,7 @@ namespace ISS
         private float _energy;
 
         private int energyCooldown = 0;
-        private int fallingDown = -25;
+        private int fallingDown = 0;
         //Verify if the player is falling
         public float LastY = 0;
 
@@ -57,7 +57,7 @@ namespace ISS
             //speed = 0f;
             int framesX = 5;
             int framesY = 3;
-            texture = Globals.Content.Load<Texture2D>("Sprite/Player01-2");
+            texture = Globals.Content.Load<Texture2D>("Sprite/Player01-1");
             _anims.AddAnimation(new Vector2(0, 0),  new Animation(texture, framesX, framesY, 0, 2, 0.25f, 1)); //Stand
             _anims.AddAnimation(new Vector2(1, 0),  new Animation(texture, framesX, framesY, 0, 3, 0.1f, 2));  //Right
             _anims.AddAnimation(new Vector2(-1, 0), new Animation(texture, framesX, framesY, 0, 3, 0.1f, 2)); //Left
@@ -130,7 +130,7 @@ namespace ISS
                 _anims.Update(InputManager.Direction, false);
             }
 
-            if (Running) OxygenLost();
+            if (Running) OxygenLost(); EnergyCharge();
             FallingDownResolve();
             JumpFlyResolve();
 
@@ -204,7 +204,7 @@ namespace ISS
                 Alive = false;
             }
             if (!Alive) return;
-            if(damage > 20)
+            if(damage > 40)
             {
                 soundFXes.Add(EnumSoundFX.PlayerTakeDamage2);
                 soundFXes.Add(EnumSoundFX.Hit);
@@ -242,7 +242,18 @@ namespace ISS
 
         public void OxygenLost()
         {
-            _oxygen -= Globals.ElapsedSeconds;
+            if (this.Interact)
+            {
+                if (GameObjectInteract.GetObjectType() != EnumGameObjectType.Oxygen)
+                {
+                    _oxygen -= Globals.ElapsedSeconds;
+                }
+            }
+            else
+            {
+                _oxygen -= Globals.ElapsedSeconds;
+            }
+
             if (_oxygen <= 0)
             {
                 _oxygen = 0;
@@ -255,11 +266,13 @@ namespace ISS
                     _health = 0;
                     soundFXesIStop.Add(EnumSoundFX.PlayerSuffocating);
                 }
+                texture = Globals.Content.Load<Texture2D>("Sprite/Player01-2");
             }
             else
             {
                 if (soundFXesIStop.Contains(EnumSoundFX.PlayerSuffocating)) return;
                 soundFXesIStop.Add(EnumSoundFX.PlayerSuffocating);
+                texture = Globals.Content.Load<Texture2D>("Sprite/Player01-1");
             }
         }
 
@@ -369,10 +382,11 @@ namespace ISS
             }
             LastY = Position.Y;
 
-            if (Grounded && fallingDown > 0 && !fly)
+            if (Grounded && fallingDown -15 > 0 && !fly)
             {
                 TakeDamage(fallingDown);
                 Jump = false;
+                JumpPower = 300;
             }
 
             if (!Grounded && JumpPower <= 425)
@@ -381,7 +395,7 @@ namespace ISS
             }
             else
             {
-                fallingDown = -20;
+                fallingDown = 0;
             }
         }
 
