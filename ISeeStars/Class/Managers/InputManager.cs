@@ -134,18 +134,22 @@ namespace ISS
             if (keyboard.IsKeyUp(Keys.Space) && GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Released) jump_key_pressed = false;
 
             //Interaction
+
             if ((keyboard.IsKeyDown(Keys.I) || GamePad.GetState(PlayerIndex.One).Buttons.Y == ButtonState.Pressed) && !interact_key_pressed)
             {
                 interact_key_pressed = true;
-                if (player.Interaction() == EnumInteractionType.MachineDefault && player.getEnergy() >= 50f)
+
+                var interactType = player.Interaction();
+                if (interactType == EnumInteractionType.MachineDefault && player.getEnergy() < 50f) soundFXes.Add(EnumSoundFX.MenuNotOpen);
+                else if (interactType == EnumInteractionType.MachineDefault && player.getEnergy() >= 50f)
                 {
                     soundFXes.Add(EnumSoundFX.MenuOpen);
                     gameMenu.Activate(true);
                     gameMenu.DefineType(EnumGameMenuType.MachineDefault);
                 }
-                if(player.getEnergy() < 50f) soundFXes.Add(EnumSoundFX.MenuNotOpen);
+
             }
-            if (keyboard.IsKeyUp(Keys.I) && GamePad.GetState(PlayerIndex.One).Buttons.Y == ButtonState.Released) interact_key_pressed = false;            
+            if (keyboard.IsKeyUp(Keys.I) && GamePad.GetState(PlayerIndex.One).Buttons.Y == ButtonState.Released) interact_key_pressed = false;
         }
 
         private void MenuControl(KeyboardState keyboard, SoundManager songManager, GameMenu gameMenu, Player player)

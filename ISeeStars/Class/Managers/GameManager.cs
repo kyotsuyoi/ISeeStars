@@ -140,25 +140,25 @@ namespace ISS
                 Rectangle objectRec = _objects[i].GetRectangle();
                 if (_objects[i].GetObjectType() == EnumGameObjectType.MetalWall)
                 {
-                    if (playerRect.Bottom * 0.95 > objectRec.Top)
+                    if (playerRect.Bottom * 0.98 > objectRec.Top)
                     {
-                        var val1 = objectRec.Left * 1.02;
-                        var val2 = objectRec.Left + objectRec.Size.X;
-                        var b1 = playerRect.Right >= val1;
-                        var b2 = playerRect.Right <= val2;
+                        //var val1 = objectRec.Left;
+                        //var val2 = objectRec.Left + objectRec.Size.X;
+                        //var b1 = playerRect.Right >= val1;
+                        //var b2 = playerRect.Right <= val2;
 
-                        if (playerRect.Right >= objectRec.Left * 1.02 &&
+                        if (playerRect.Right * 0.98 >= objectRec.Left &&
                             playerRect.Right <= objectRec.Right)
                         {
                             player.ObstructionRight = true;
                         }
-                        if (playerRect.Left <= objectRec.Right * 0.98 &&
+                        if (playerRect.Left * 1.02 <= objectRec.Right &&
                             playerRect.Left >= objectRec.Left)
                         {
                             player.ObstructionLeft = true;
                         }
                     }
-                }                
+                }
             }
         }
 

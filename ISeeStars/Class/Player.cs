@@ -398,6 +398,11 @@ namespace ISS
                         if (_health < 100 && GameObjectInteract.ConsumeRefill())
                         {
                             HealthRefill();
+                            soundFXes.Add(EnumSoundFX.MenuSelected);
+                        }
+                        else
+                        {
+                            soundFXes.Add(EnumSoundFX.MenuNotOpen);
                         }
                         break;
 
@@ -405,6 +410,11 @@ namespace ISS
                         if (_oxygen < 100 && GameObjectInteract.ConsumeRefill())
                         {
                             OxygenRefill();
+                            soundFXes.Add(EnumSoundFX.MenuSelected);
+                        }
+                        else
+                        {
+                            soundFXes.Add(EnumSoundFX.MenuNotOpen);
                         }
                         break;
 
@@ -412,6 +422,11 @@ namespace ISS
                         if (_energy < 100 && GameObjectInteract.ConsumeRefill())
                         {
                             EnergyRefill();
+                            soundFXes.Add(EnumSoundFX.MenuSelected);
+                        }
+                        else
+                        {
+                            soundFXes.Add(EnumSoundFX.MenuNotOpen);
                         }
                         break;
                 }
